@@ -1,5 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 interface ProvidersProps {
   children: React.ReactNode
@@ -8,8 +9,10 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <BrowserRouter>
-      {children}
-      <Toaster />
+      <AuthProvider>
+        {children}
+        <Toaster />
+      </AuthProvider>
     </BrowserRouter>
   )
 }

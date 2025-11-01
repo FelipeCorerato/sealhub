@@ -1,5 +1,14 @@
 import type { Company, Campaign } from '@/types'
 
+interface LoginResponse {
+  user: {
+    id: string
+    name: string
+    email: string
+  }
+  token: string
+}
+
 const mockCompanies: Company[] = [
   {
     cnpj: '12345678000100',
@@ -86,5 +95,31 @@ export async function saveCampaign(
   }
 
   return newCampaign
+}
+
+/**
+ * Login de usuário (mock)
+ * Credenciais válidas: admin@vgsa.com.br / 123456
+ */
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<LoginResponse> {
+  // Simula delay de API
+  await new Promise((resolve) => setTimeout(resolve, 800))
+
+  // Validar credenciais mock
+  if (email === 'admin@vgsa.com.br' && password === '123456') {
+    return {
+      user: {
+        id: '1',
+        name: 'Administrador',
+        email: 'admin@vgsa.com.br',
+      },
+      token: 'mock-jwt-token-123456789',
+    }
+  }
+
+  throw new Error('Credenciais inválidas')
 }
 

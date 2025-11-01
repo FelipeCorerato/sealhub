@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Logo } from '@/components/Logo'
+import { useAuth } from '@/contexts/AuthContext'
 
 const navigation = [
   { name: 'Clientes', href: '/clientes', icon: Users },
@@ -12,10 +13,10 @@ const navigation = [
 
 function SidebarContent() {
   const location = useLocation()
+  const { logout } = useAuth()
 
   const handleLogout = () => {
-    console.log('Logout')
-    // Lógica de logout aqui
+    logout()
   }
 
   return (
