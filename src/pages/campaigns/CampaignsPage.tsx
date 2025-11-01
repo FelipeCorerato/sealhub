@@ -152,9 +152,9 @@ export function CampaignsPage() {
   const selectedCount = selectedCNPJs.size
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen">
       <Sidebar />
-      <main className="flex-1">
+      <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
           <TopBar
             title="Painel de Campanhas"
