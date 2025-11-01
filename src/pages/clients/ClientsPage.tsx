@@ -2,21 +2,42 @@ import { useState } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { TopBar } from '@/components/TopBar'
 import { SearchCNPJ } from '@/components/SearchCNPJ'
+import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ResultsTable } from '@/components/ResultsTable'
 import { FooterBar } from '@/components/FooterBar'
 import type { Company } from '@/types'
-import { fetchCompaniesByCNPJ } from '@/lib/api.mock'
+import {
+  fetchCompaniesByCNPJ,
+  fetchCompaniesByName,
+} from '@/lib/api.mock'
+
+type PageMode = 'add' | 'search'
 
 export function ClientsPage() {
+  const [mode, setMode] = useState<PageMode>('add')
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company>()
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSearch = async (cnpj: string) => {
+  const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
     setSelectedCompany(undefined)
     try {
       const results = await fetchCompaniesByCNPJ(cnpj)
+      setCompanies(results)
+    } catch (error) {
+      console.error('Erro ao buscar empresas:', error)
+      setCompanies([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSearchByName = async (name: string) => {
+    setIsLoading(true)
+    setSelectedCompany(undefined)
+    try {
+      const results = await fetchCompaniesByName(name)
       setCompanies(results)
     } catch (error) {
       console.error('Erro ao buscar empresas:', error)
@@ -41,32 +62,73 @@ export function ClientsPage() {
   }
 
   const handleNewClient = () => {
-    console.log('Novo cliente')
-    // Lógica para abrir formulário de novo cliente
+    setMode('add')
+    setCompanies([])
+    setSelectedCompany(undefined)
   }
 
   const handleSearchClient = () => {
-    console.log('Buscar cliente')
-    // Lógica para buscar cliente existente
+    setMode('search')
+    setCompanies([])
+    setSelectedCompany(undefined)
   }
+
+  const pageTitle = mode === 'add' ? 'Adicionar Cliente' : 'Procurar Cliente'
+  const tableMode = mode === 'search' ? 'edit' : mode
+  const footerMode = mode === 'search' ? 'edit' : mode
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl p-6 space-y-6 pb-32">
+        <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
           <TopBar
+            title="Painel de Clientes"
+            type="clients"
+            mode={mode}
             onNovoCliente={handleNewClient}
             onBuscarCliente={handleSearchClient}
           />
-          <SearchCNPJ onSearch={handleSearch} isLoading={isLoading} />
+
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition-all duration-300">
+            <h3 className="mb-4 text-lg font-semibold text-neutral-800">
+              {pageTitle}
+            </h3>
+            <div className="transition-opacity duration-300">
+              {mode === 'add' ? (
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                      Buscar CNPJ *
+                    </label>
+                    <SearchCNPJ
+                      onSearch={handleSearchByCNPJ}
+                      isLoading={isLoading}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <ClientSearchBar
+                  onSearchByName={handleSearchByName}
+                  onSearchByCNPJ={handleSearchByCNPJ}
+                  isLoading={isLoading}
+                />
+              )}
+            </div>
+          </div>
+
           <ResultsTable
             companies={companies}
             selectedCompany={selectedCompany}
             onSelectCompany={handleSelectCompany}
+            mode={tableMode}
           />
         </div>
-        <FooterBar selectedCompany={selectedCompany} onSave={handleSave} />
+        <FooterBar
+          selectedCompany={selectedCompany}
+          mode={footerMode}
+          onSave={handleSave}
+        />
       </main>
     </div>
   )

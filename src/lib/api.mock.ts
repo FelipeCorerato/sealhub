@@ -1,38 +1,90 @@
-import type { Company } from '@/types'
+import type { Company, Campaign } from '@/types'
+
+const mockCompanies: Company[] = [
+  {
+    cnpj: '12345678000100',
+    name: 'USK Calçados Matriz',
+    address: 'Av. Central, 100 – Centro – SP – 01000-000',
+    type: 'headquarters',
+    status: 'active',
+  },
+  {
+    cnpj: '12345678000191',
+    name: 'USK Calçados Filial 1',
+    address: 'Rua Secundária, 200 – Bairro – SP – 02000-000',
+    type: 'branch',
+    status: 'closed',
+  },
+  {
+    cnpj: '12345678000282',
+    name: 'USK Calçados Filial 2',
+    address: 'Av. Terciária, 300 – Centro – SP – 03000-000',
+    type: 'branch',
+    status: 'suspended',
+  },
+  {
+    cnpj: '98765432000155',
+    name: 'Iasa Impressionante LTDA',
+    address: 'Rua das Flores, 456 – Jardim – SP – 04000-000',
+    type: 'headquarters',
+    status: 'active',
+  },
+  {
+    cnpj: '11122233000144',
+    name: 'M7 Comercial Importadora',
+    address: 'Av. Paulista, 1000 – Bela Vista – SP – 01310-000',
+    type: 'headquarters',
+    status: 'active',
+  },
+]
 
 /**
  * Busca empresas por CNPJ (mock)
- * Retorna 3 registros após um delay de 600ms
+ * Retorna registros após um delay de 600ms
  */
 export async function fetchCompaniesByCNPJ(
-  _queryDigits: string,
+  queryDigits: string,
 ): Promise<Company[]> {
   // Simula delay de API
   await new Promise((resolve) => setTimeout(resolve, 600))
 
-  // Retorna dados mock
-  return [
-    {
-      cnpj: '12345678000100',
-      name: 'USK Calcados Matriz',
-      address: 'Av. Central, 100 – Centro – SP – 01000-000',
-      type: 'headquarters',
-      status: 'active',
-    },
-    {
-      cnpj: '12345678000100',
-      name: 'USK Calcados Filial 1',
-      address: 'Rua Secundária, 200 – Bairro – SP – 02000-000',
-      type: 'branch',
-      status: 'closed',
-    },
-    {
-      cnpj: '12345678000100',
-      name: 'USK Calcados Filial 2',
-      address: 'Av. Terciária, 300 – Centro – SP – 03000-000',
-      type: 'branch',
-      status: 'suspended',
-    },
-  ]
+  // Filtra empresas que contêm os dígitos buscados
+  return mockCompanies.filter((company) => company.cnpj.includes(queryDigits))
+}
+
+/**
+ * Busca empresas por nome (mock)
+ * Retorna registros após um delay de 600ms
+ */
+export async function fetchCompaniesByName(
+  queryName: string,
+): Promise<Company[]> {
+  // Simula delay de API
+  await new Promise((resolve) => setTimeout(resolve, 600))
+
+  // Filtra empresas que contêm o nome buscado (case insensitive)
+  const normalizedQuery = queryName.toLowerCase()
+  return mockCompanies.filter((company) =>
+    company.name.toLowerCase().includes(normalizedQuery),
+  )
+}
+
+/**
+ * Salva uma campanha (mock)
+ * Retorna a campanha criada após um delay de 600ms
+ */
+export async function saveCampaign(
+  campaign: Omit<Campaign, 'id'>,
+): Promise<Campaign> {
+  // Simula delay de API
+  await new Promise((resolve) => setTimeout(resolve, 600))
+
+  // Gera ID mock
+  const newCampaign: Campaign = {
+    ...campaign,
+    id: Math.random().toString(36).substring(7),
+  }
+
+  return newCampaign
 }
 

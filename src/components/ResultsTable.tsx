@@ -24,6 +24,7 @@ interface ResultsTableProps {
   companies: Company[]
   selectedCompany?: Company
   onSelectCompany: (company: Company) => void
+  mode?: 'add' | 'edit'
 }
 
 const statusColors: Record<Status, string> = {
@@ -39,10 +40,13 @@ export function ResultsTable({
   companies,
   selectedCompany,
   onSelectCompany,
+  mode = 'add',
 }: ResultsTableProps) {
   if (companies.length === 0) {
     return null
   }
+
+  const showStatusColumns = mode === 'add'
 
   return (
     <div className="rounded-2xl bg-white shadow-sm">
@@ -53,8 +57,14 @@ export function ResultsTable({
               <TableHead className="sticky top-0 bg-white">CNPJ</TableHead>
               <TableHead className="sticky top-0 bg-white">Nome</TableHead>
               <TableHead className="sticky top-0 bg-white">Endereço</TableHead>
-              <TableHead className="sticky top-0 bg-white">Tipo</TableHead>
-              <TableHead className="sticky top-0 bg-white">Situação</TableHead>
+              {showStatusColumns && (
+                <>
+                  <TableHead className="sticky top-0 bg-white">Tipo</TableHead>
+                  <TableHead className="sticky top-0 bg-white">
+                    Situação
+                  </TableHead>
+                </>
+              )}
               <TableHead className="sticky top-0 bg-white text-right">
                 Ação
               </TableHead>
@@ -79,62 +89,83 @@ export function ResultsTable({
                   <TableCell className="text-sm text-neutral-600">
                     {company.address}
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-neutral-700">
-                      {companyTypeLabels[company.type]}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn('font-medium', statusColors[company.status])}
-                    >
-                      {statusLabels[company.status]}
-                    </Badge>
-                  </TableCell>
+                  {showStatusColumns && (
+                    <>
+                      <TableCell>
+                        <span className="text-sm text-neutral-700">
+                          {companyTypeLabels[company.type]}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'font-medium',
+                            statusColors[company.status],
+                          )}
+                        >
+                          {statusLabels[company.status]}
+                        </Badge>
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            console.log('Editar', company)
-                          }}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigator.clipboard.writeText(company.cnpj)
-                          }}
-                        >
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copiar CNPJ
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            console.log('Excluir', company)
-                          }}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {mode === 'edit' ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          console.log('Editar', company)
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              console.log('Editar', company)
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigator.clipboard.writeText(company.cnpj)
+                            }}
+                          >
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copiar CNPJ
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              console.log('Excluir', company)
+                            }}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               )

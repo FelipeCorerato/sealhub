@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Users, Megaphone, Menu } from 'lucide-react'
+import { Users, Megaphone, Menu, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Logo } from '@/components/Logo'
 
 const navigation = [
   { name: 'Clientes', href: '/clientes', icon: Users },
@@ -12,12 +13,16 @@ const navigation = [
 function SidebarContent() {
   const location = useLocation()
 
+  const handleLogout = () => {
+    console.log('Logout')
+    // Lógica de logout aqui
+  }
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
       <div className="border-b border-neutral-200 p-6">
-        <h1 className="text-2xl font-bold text-[#D97B35]">SealHub</h1>
-        <p className="text-sm text-neutral-600">Gestão de Selos</p>
+        <Logo />
       </div>
 
       {/* Navigation */}
@@ -29,9 +34,9 @@ function SidebarContent() {
               key={item.name}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-[#D97B35] text-white'
+                  ? 'bg-orange-50 text-[#D97B35] before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-[#D97B35]'
                   : 'text-neutral-700 hover:bg-neutral-100',
               )}
             >
@@ -42,9 +47,16 @@ function SidebarContent() {
         })}
       </nav>
 
-      {/* Footer */}
+      {/* Footer - Botão SAIR */}
       <div className="border-t border-neutral-200 p-4">
-        <p className="text-xs text-neutral-500">© 2025 SealHub</p>
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className="w-full justify-start gap-2 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+        >
+          <LogOut className="h-5 w-5" />
+          SAIR
+        </Button>
       </div>
     </div>
   )
