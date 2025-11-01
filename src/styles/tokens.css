@@ -1,0 +1,41 @@
+:root {
+  /* Cores principais */
+  --color-background: #faf6ef;
+  --color-text: #2b2118;
+  --color-primary: #d97b35;
+  --color-primary-hover: #bd6126;
+
+  /* Cores de status - Badge */
+  --color-status-ativa: #16a34a;
+  --color-status-ativa-bg: #dcfce7;
+  --color-status-baixada: #6b7280;
+  --color-status-baixada-bg: #f3f4f6;
+  --color-status-suspensa: #dc2626;
+  --color-status-suspensa-bg: #fee2e2;
+
+  /* Espaçamentos */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Aplicar fundo global */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
