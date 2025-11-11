@@ -7,7 +7,9 @@ import {
   signOut, 
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider
 } from 'firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -23,6 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
 }
@@ -107,6 +110,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      })
+      
+      const userCredential = await signInWithPopup(auth, provider)
+      
+      toast.success('Login realizado com sucesso!', {
+        description: `Bem-vindo(a), ${userCredential.user.displayName || userCredential.user.email}`,
+      })
+
+      // Redirecionar para clientes
+      navigate('/clientes')
+    } catch (error: any) {
+      console.error('Erro no login com Google:', error)
+      
+      let errorMessage = 'Não foi possível fazer login com Google'
+      
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Login cancelado pelo usuário'
+          break
+        case 'auth/popup-blocked':
+          errorMessage = 'Pop-up bloqueado. Permita pop-ups para este site'
+          break
+        case 'auth/cancelled-popup-request':
+          // Não mostrar erro se o usuário cancelou
+          return
+        case 'auth/account-exists-with-different-credential':
+          errorMessage = 'Esta conta já existe com outro método de login'
+          break
+        case 'auth/network-request-failed':
+          errorMessage = 'Erro de conexão. Verifique sua internet'
+          break
+      }
+      
+      throw new Error(errorMessage)
+    }
+  }
+
   const logout = async () => {
     try {
       await signOut(auth)
@@ -164,6 +209,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!user,
     isLoading,
     login,
+    loginWithGoogle,
     logout,
     register,
   }

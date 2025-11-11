@@ -65,12 +65,17 @@ O sistema implementado inclui:
 4. **Monitoramento de Estado**: `onAuthStateChanged()` detecta automaticamente login/logout
 5. **Persistência**: Firebase gerencia a sessão automaticamente
 
+## 🎉 Login com Google Implementado!
+
+O login com Google já está implementado! Veja o arquivo `GOOGLE_AUTH_SETUP.md` para instruções de configuração.
+
 ## 📝 Próximos Passos (Opcional)
 
 Se você quiser adicionar mais funcionalidades de autenticação:
 
+- [x] Login com Email/Password ✅
+- [x] Login com Google ✅
 - [ ] Recuperação de senha (Forgot Password)
-- [ ] Login com Google
 - [ ] Login com GitHub
 - [ ] Verificação de email
 - [ ] Atualização de perfil (nome, foto)
