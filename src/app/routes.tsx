@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { PrivateRoute } from '@/components/PrivateRoute'
 import { LoginPage } from '@/pages/auth/LoginPage'
+import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ClientsPage } from '@/pages/clients/ClientsPage'
 import { CampaignsPage } from '@/pages/campaigns/CampaignsPage'
 
@@ -22,6 +23,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/registro" element={<RegisterPage />} />
       <Route
         path="/clientes"
         element={
