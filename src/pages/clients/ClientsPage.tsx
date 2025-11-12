@@ -10,6 +10,8 @@ import {
   fetchCompaniesByCNPJ,
   fetchCompaniesByName,
 } from '@/lib/api.mock'
+import { fetchCNPJFromReceita, validateCNPJDigits } from '@/lib/cnpj-api'
+import { toast } from 'sonner'
 
 type PageMode = 'add' | 'search'
 
@@ -22,11 +24,39 @@ export function ClientsPage() {
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
     setSelectedCompany(undefined)
+    setCompanies([])
+
     try {
-      const results = await fetchCompaniesByCNPJ(cnpj)
-      setCompanies(results)
+      // Se estiver no modo "add", busca na API da Receita Federal
+      if (mode === 'add') {
+        // Valida dígitos verificadores
+        if (!validateCNPJDigits(cnpj)) {
+          toast.error('CNPJ inválido', {
+            description: 'Os dígitos verificadores do CNPJ estão incorretos.',
+          })
+          return
+        }
+
+        // Busca na API da Receita Federal
+        const company = await fetchCNPJFromReceita(cnpj)
+        setCompanies([company])
+        
+        toast.success('CNPJ encontrado!', {
+          description: company.name,
+        })
+      } else {
+        // Modo "search" usa o mock local
+        const results = await fetchCompaniesByCNPJ(cnpj)
+        setCompanies(results)
+      }
     } catch (error) {
       console.error('Erro ao buscar empresas:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao buscar CNPJ'
+      
+      toast.error('Erro na busca', {
+        description: errorMessage,
+      })
       setCompanies([])
     } finally {
       setIsLoading(false)
