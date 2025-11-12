@@ -40,7 +40,16 @@ export function FooterBar({ selectedCompany, mode, onSave }: FooterBarProps) {
         </div>
         <Button
           onClick={handleSave}
-          className="gap-2 bg-[#D97B35] text-white transition-all hover:bg-[#bd6126] hover:scale-105"
+          className="gap-2 text-white transition-all hover:scale-105"
+          style={{
+            backgroundColor: 'var(--color-primary)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+          }}
         >
           <Save className="h-4 w-4" />
           Salvar

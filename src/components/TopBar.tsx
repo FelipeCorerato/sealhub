@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button'
 import { Plus, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface TopBarProps {
   title: string
@@ -28,11 +27,26 @@ export function TopBar({
         <Button
           variant={mode === 'search' ? 'default' : 'outline'}
           onClick={onBuscarCliente}
-          className={cn(
-            'gap-2',
-            mode === 'search' &&
-              'bg-[#D97B35] text-white hover:bg-[#bd6126]',
-          )}
+          className="gap-2"
+          style={
+            mode === 'search'
+              ? {
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                }
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (mode === 'search') {
+              e.currentTarget.style.backgroundColor =
+                'var(--color-primary-hover)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (mode === 'search') {
+              e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+            }
+          }}
         >
           <Search className="h-4 w-4" />
           {searchLabel}
@@ -40,10 +54,26 @@ export function TopBar({
         <Button
           variant={mode === 'add' ? 'default' : 'outline'}
           onClick={onNovoCliente}
-          className={cn(
-            'gap-2',
-            mode === 'add' && 'bg-[#D97B35] text-white hover:bg-[#bd6126]',
-          )}
+          className="gap-2"
+          style={
+            mode === 'add'
+              ? {
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                }
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (mode === 'add') {
+              e.currentTarget.style.backgroundColor =
+                'var(--color-primary-hover)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (mode === 'add') {
+              e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+            }
+          }}
         >
           <Plus className="h-4 w-4" />
           {newLabel}

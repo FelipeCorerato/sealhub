@@ -125,7 +125,7 @@ export function CampaignForm({
                   onCheckedChange={(checked) =>
                     onInstructionChange(item.key, checked === true)
                   }
-                  className="data-[state=checked]:bg-[#D97B35] data-[state=checked]:border-[#D97B35]"
+                  className="data-[state=checked]:bg-[var(--color-primary)] data-[state=checked]:border-[var(--color-primary)]"
                 />
                 <label
                   htmlFor={item.key}

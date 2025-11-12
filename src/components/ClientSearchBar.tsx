@@ -92,7 +92,26 @@ export function ClientSearchBar({
             <Button
               onClick={handleSearchByName}
               disabled={!isNameValid || isLoading}
-              className="gap-2 bg-[#D97B35] text-white hover:bg-[#bd6126] disabled:bg-neutral-300"
+              className="gap-2 text-white disabled:bg-neutral-300"
+              style={
+                !isNameValid || isLoading
+                  ? undefined
+                  : {
+                      backgroundColor: 'var(--color-primary)',
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (isNameValid && !isLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary-hover)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isNameValid && !isLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary)'
+                }
+              }}
             >
               {isLoading ? (
                 <>
@@ -138,7 +157,26 @@ export function ClientSearchBar({
             <Button
               onClick={handleSearchByCNPJ}
               disabled={!isCnpjValid || isLoading}
-              className="gap-2 bg-[#D97B35] text-white hover:bg-[#bd6126] disabled:bg-neutral-300"
+              className="gap-2 text-white disabled:bg-neutral-300"
+              style={
+                !isCnpjValid || isLoading
+                  ? undefined
+                  : {
+                      backgroundColor: 'var(--color-primary)',
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (isCnpjValid && !isLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary-hover)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isCnpjValid && !isLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary)'
+                }
+              }}
             >
               {isLoading ? (
                 <>

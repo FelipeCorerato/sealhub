@@ -189,7 +189,26 @@ export function RegisterPage() {
             <Button
               type="submit"
               disabled={isLoading || isGoogleLoading}
-              className="h-12 w-full bg-[#D97B35] text-base font-semibold text-white transition-all hover:bg-[#bd6126] hover:scale-[1.02] disabled:bg-neutral-300 disabled:hover:scale-100"
+              className="h-12 w-full text-base font-semibold text-white transition-all hover:scale-[1.02] disabled:bg-neutral-300 disabled:hover:scale-100"
+              style={
+                isLoading || isGoogleLoading
+                  ? undefined
+                  : {
+                      backgroundColor: 'var(--color-primary)',
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (!isLoading && !isGoogleLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary-hover)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading && !isGoogleLoading) {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--color-primary)'
+                }
+              }}
             >
               {isLoading ? (
                 <>
@@ -258,7 +277,8 @@ export function RegisterPage() {
               Já tem uma conta?{' '}
               <Link
                 to="/login"
-                className="font-semibold text-[#D97B35] hover:underline"
+                className="font-semibold hover:underline"
+                style={{ color: 'var(--color-primary)' }}
               >
                 Fazer login
               </Link>

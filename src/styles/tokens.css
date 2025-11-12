@@ -1,9 +1,10 @@
 :root {
-  /* Cores principais */
+  /* Cores principais - Serão sobrescritas pelo ThemeContext */
   --color-background: #faf6ef;
   --color-text: #2b2118;
   --color-primary: #d97b35;
   --color-primary-hover: #bd6126;
+  --color-primary-light: #fff8f1;
 
   /* Cores de status - Badge */
   --color-status-ativa: #16a34a;

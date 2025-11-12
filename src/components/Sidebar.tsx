@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Logo } from '@/components/Logo'
+import { ThemeSelector } from '@/components/ThemeSelector'
 import { useAuth } from '@/contexts/AuthContext'
 
 const navigation = [
@@ -37,9 +38,14 @@ function SidebarContent() {
               className={cn(
                 'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-orange-50 text-[#D97B35] before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-[#D97B35]'
+                  ? 'text-[var(--color-primary)] before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-[var(--color-primary)]'
                   : 'text-neutral-700 hover:bg-neutral-100',
               )}
+              style={
+                isActive
+                  ? { backgroundColor: 'var(--color-primary-light)' }
+                  : undefined
+              }
             >
               <item.icon className="h-5 w-5" />
               {item.name}
@@ -48,16 +54,19 @@ function SidebarContent() {
         })}
       </nav>
 
-      {/* Footer - Botão SAIR */}
-      <div className="border-t border-neutral-200 p-4">
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className="w-full justify-start gap-2 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
-        >
-          <LogOut className="h-5 w-5" />
-          SAIR
-        </Button>
+      {/* Footer - Botões de Tema e SAIR */}
+      <div className="border-t border-neutral-200 p-4 space-y-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="flex-1 justify-start gap-2 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+          >
+            <LogOut className="h-5 w-5" />
+            SAIR
+          </Button>
+          <ThemeSelector />
+        </div>
       </div>
     </div>
   )

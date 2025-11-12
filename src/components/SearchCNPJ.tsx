@@ -65,7 +65,25 @@ export function SearchCNPJ({ onSearch, isLoading = false }: SearchCNPJProps) {
         <Button
           onClick={handleSearch}
           disabled={!isValid || isLoading}
-          className="gap-2 bg-[#D97B35] text-white hover:bg-[#bd6126] disabled:bg-neutral-300"
+          className="gap-2 text-white disabled:bg-neutral-300"
+          style={
+            !isValid || isLoading
+              ? undefined
+              : {
+                  backgroundColor: 'var(--color-primary)',
+                }
+          }
+          onMouseEnter={(e) => {
+            if (isValid && !isLoading) {
+              e.currentTarget.style.backgroundColor =
+                'var(--color-primary-hover)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (isValid && !isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+            }
+          }}
         >
           {isLoading ? (
             <>
