@@ -48,21 +48,13 @@ export const companyTypeLabels: Record<CompanyType, string> = {
   branch: 'Filial',
 }
 
-// Campaign types
+// ===== CAMPAIGN TYPES =====
+
 export interface CampaignInstructions {
   fragile: boolean
   attention: boolean
   handleWithCare: boolean
   thisWayUp: boolean
-}
-
-export interface Campaign {
-  id: string
-  name: string
-  sender: string
-  observation: string
-  instructions: CampaignInstructions
-  clientCNPJs: string[]
 }
 
 export const instructionLabels: Record<
@@ -73,5 +65,40 @@ export const instructionLabels: Record<
   attention: 'Atenção',
   handleWithCare: 'Manusear com Cuidado',
   thisWayUp: 'Este Lado Para Cima',
+}
+
+export type CampaignStatus = 'draft' | 'active' | 'completed' | 'cancelled'
+
+// Campanha completa no banco de dados (com metadados)
+export interface Campaign {
+  id: string
+  name: string
+  sender: string
+  observation: string
+  instructions: CampaignInstructions
+  
+  // Clientes vinculados (IDs do Firestore)
+  companyIds: string[]
+  
+  // Status
+  status: CampaignStatus
+  
+  // Metadata
+  createdAt: Date
+  createdBy: string  // User ID
+  updatedAt: Date
+}
+
+// Dados para criar uma nova campanha
+export type CreateCampaignData = Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>
+
+// Dados para atualizar uma campanha
+export type UpdateCampaignData = Partial<Omit<Campaign, 'id' | 'createdAt' | 'createdBy'>>
+
+export const campaignStatusLabels: Record<CampaignStatus, string> = {
+  draft: 'Rascunho',
+  active: 'Ativa',
+  completed: 'Concluída',
+  cancelled: 'Cancelada',
 }
 

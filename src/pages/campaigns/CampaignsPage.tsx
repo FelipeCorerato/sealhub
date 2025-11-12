@@ -8,13 +8,16 @@ import { Button } from '@/components/ui/button'
 import { FileText } from 'lucide-react'
 import type { Company, CampaignInstructions } from '@/types'
 import {
-  fetchCompaniesByCNPJ,
-  fetchCompaniesByName,
-  saveCampaign,
-} from '@/lib/api.mock'
+  searchCompaniesByName,
+  searchCompaniesByCNPJ,
+  getAllCompanies,
+} from '@/lib/firebase/companies'
+import { createCampaign } from '@/lib/firebase/campaigns'
+import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 export function CampaignsPage() {
+  const { user } = useAuth()
   const [campaignName, setCampaignName] = useState('')
   const [sender, setSender] = useState('')
   const [observation, setObservation] = useState('')
@@ -26,17 +29,28 @@ export function CampaignsPage() {
   })
 
   const [companies, setCompanies] = useState<Company[]>([])
-  const [selectedCNPJs, setSelectedCNPJs] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
     try {
-      const results = await fetchCompaniesByCNPJ(cnpj)
+      const results = await searchCompaniesByCNPJ(cnpj)
       setCompanies(results)
+      
+      if (results.length === 0) {
+        toast.info('Nenhum resultado encontrado', {
+          description: 'Não há clientes cadastrados com este CNPJ.',
+        })
+      } else {
+        toast.success(`${results.length} cliente(s) encontrado(s)`)
+      }
     } catch (error) {
       console.error('Erro ao buscar empresas:', error)
+      toast.error('Erro na busca', {
+        description: 'Não foi possível buscar os clientes.',
+      })
       setCompanies([])
     } finally {
       setIsLoading(false)
@@ -46,23 +60,58 @@ export function CampaignsPage() {
   const handleSearchByName = async (name: string) => {
     setIsLoading(true)
     try {
-      const results = await fetchCompaniesByName(name)
+      const results = await searchCompaniesByName(name)
       setCompanies(results)
+      
+      if (results.length === 0) {
+        toast.info('Nenhum resultado encontrado', {
+          description: 'Não há clientes cadastrados com este nome.',
+        })
+      } else {
+        toast.success(`${results.length} cliente(s) encontrado(s)`)
+      }
     } catch (error) {
       console.error('Erro ao buscar empresas:', error)
+      toast.error('Erro na busca', {
+        description: 'Não foi possível buscar os clientes.',
+      })
       setCompanies([])
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleToggleClient = (cnpj: string) => {
-    setSelectedCNPJs((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(cnpj)) {
-        newSet.delete(cnpj)
+  const handleListAll = async () => {
+    setIsLoading(true)
+    try {
+      const results = await getAllCompanies()
+      setCompanies(results)
+      
+      if (results.length === 0) {
+        toast.info('Nenhum cliente cadastrado', {
+          description: 'Adicione clientes para visualizá-los aqui.',
+        })
       } else {
-        newSet.add(cnpj)
+        toast.success(`${results.length} cliente(s) disponíveis`)
+      }
+    } catch (error) {
+      console.error('Erro ao listar empresas:', error)
+      toast.error('Erro ao listar', {
+        description: 'Não foi possível listar os clientes.',
+      })
+      setCompanies([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleToggleClient = (id: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
       }
       return newSet
     })
@@ -76,6 +125,11 @@ export function CampaignsPage() {
   }
 
   const handleGenerateSeals = async () => {
+    if (!user) {
+      toast.error('Usuário não autenticado')
+      return
+    }
+
     // Validação básica
     if (!campaignName.trim()) {
       toast.error('Nome da campanha é obrigatório')
@@ -89,23 +143,25 @@ export function CampaignsPage() {
       toast.error('Observação é obrigatória')
       return
     }
-    if (selectedCNPJs.size === 0) {
+    if (selectedIds.size === 0) {
       toast.error('Selecione pelo menos um cliente')
       return
     }
 
     setIsSaving(true)
     try {
-      const campaign = await saveCampaign({
+      const campaign = await createCampaign({
         name: campaignName,
         sender,
         observation,
         instructions,
-        clientCNPJs: Array.from(selectedCNPJs),
+        companyIds: Array.from(selectedIds),
+        status: 'active',
+        createdBy: user.id,
       })
 
-      toast.success('Selos gerados com sucesso!', {
-        description: `Campanha "${campaign.name}" criada com ${selectedCNPJs.size} cliente(s).`,
+      toast.success('Campanha criada com sucesso!', {
+        description: `"${campaign.name}" foi criada com ${selectedIds.size} cliente(s).`,
       })
 
       // Limpa o formulário
@@ -118,11 +174,16 @@ export function CampaignsPage() {
         handleWithCare: false,
         thisWayUp: false,
       })
-      setSelectedCNPJs(new Set())
+      setSelectedIds(new Set())
       setCompanies([])
     } catch (error) {
-      console.error('Erro ao gerar selos:', error)
-      toast.error('Erro ao gerar selos')
+      console.error('Erro ao criar campanha:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao criar campanha'
+      
+      toast.error('Erro ao criar campanha', {
+        description: errorMessage,
+      })
     } finally {
       setIsSaving(false)
     }
@@ -139,7 +200,7 @@ export function CampaignsPage() {
       handleWithCare: false,
       thisWayUp: false,
     })
-    setSelectedCNPJs(new Set())
+    setSelectedIds(new Set())
     setCompanies([])
   }
 
@@ -149,7 +210,7 @@ export function CampaignsPage() {
     toast.info('Funcionalidade em desenvolvimento')
   }
 
-  const selectedCount = selectedCNPJs.size
+  const selectedCount = selectedIds.size
 
   return (
     <div className="min-h-screen">
@@ -179,16 +240,22 @@ export function CampaignsPage() {
           </div>
 
           {/* Procurar Cliente */}
-          <ClientSearchBar
-            onSearchByName={handleSearchByName}
-            onSearchByCNPJ={handleSearchByCNPJ}
-            isLoading={isLoading}
-          />
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-lg font-semibold text-neutral-800">
+              Selecionar Clientes
+            </h3>
+            <ClientSearchBar
+              onSearchByName={handleSearchByName}
+              onSearchByCNPJ={handleSearchByCNPJ}
+              onListAll={handleListAll}
+              isLoading={isLoading}
+            />
+          </div>
 
           {/* Tabela de Seleção de Clientes */}
           <ClientSelectionTable
             companies={companies}
-            selectedCNPJs={selectedCNPJs}
+            selectedIds={selectedIds}
             onToggleClient={handleToggleClient}
           />
         </div>

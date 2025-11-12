@@ -1,4 +1,6 @@
 // Re-export Firebase services
+
+// Companies
 export {
   createCompany,
   getCompanyById,
@@ -11,4 +13,16 @@ export {
   cnpjExists,
   upsertCompanyFromReceita,
 } from './companies'
+
+// Campaigns
+export {
+  createCampaign,
+  getCampaignById,
+  searchCampaignsByName,
+  getCampaignsByStatus,
+  getAllCampaigns,
+  updateCampaign,
+  deleteCampaign,
+  getCampaignsByUser,
+} from './campaigns'
 
