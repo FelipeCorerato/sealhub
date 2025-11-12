@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
+@import "./styles/accessibility.css";
 
 @plugin "tailwindcss-animate";
 /* @import "tw-animate-css"; */

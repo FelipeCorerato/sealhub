@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Logo } from '@/components/Logo'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAccessibility } from '@/contexts/AccessibilityContext'
 
 const navigation = [
   { name: 'Clientes', href: '/clientes', icon: Users },
@@ -15,6 +16,7 @@ const navigation = [
 function SidebarContent() {
   const location = useLocation()
   const { logout } = useAuth()
+  const { isDarkMode } = useAccessibility()
 
   const handleLogout = () => {
     logout()
@@ -37,13 +39,25 @@ function SidebarContent() {
               to={item.href}
               className={cn(
                 'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
+                isActive && !isDarkMode
                   ? 'text-[var(--color-primary)] before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-[var(--color-primary)]'
-                  : 'text-neutral-700 hover:bg-neutral-100',
+                  : '',
+                isActive && isDarkMode
+                  ? 'text-[var(--color-primary)] font-bold'
+                  : '',
+                !isActive
+                  ? 'text-neutral-700 hover:bg-neutral-100'
+                  : '',
               )}
               style={
                 isActive
-                  ? { backgroundColor: 'var(--color-primary-light)' }
+                  ? { 
+                      backgroundColor: isDarkMode 
+                        ? 'rgba(0, 0, 0, 0.3)' 
+                        : 'var(--color-primary-light)',
+                      borderLeft: isDarkMode ? '4px solid var(--color-primary)' : undefined,
+                      paddingLeft: isDarkMode ? 'calc(0.75rem - 4px)' : undefined,
+                    }
                   : undefined
               }
             >

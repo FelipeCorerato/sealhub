@@ -1,0 +1,1008 @@
+/* Floating Button */
+.accessibility-floating-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 9998;
+}
+
+.accessibility-floating-button:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.accessibility-floating-button:active {
+  transform: scale(1.05);
+}
+
+/* Overlay */
+.accessibility-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Menu Panel */
+.accessibility-menu {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  width: 360px;
+  max-height: 600px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Menu Header */
+.accessibility-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--color-primary-light);
+}
+
+.accessibility-menu-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--color-primary);
+}
+
+.accessibility-menu-title h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.accessibility-close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.accessibility-close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+/* Menu Content */
+.accessibility-menu-content {
+  padding: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Menu Item */
+.accessibility-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  background-color: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+.accessibility-menu-item:hover {
+  background-color: var(--color-primary-light);
+}
+
+.accessibility-menu-item.active {
+  background-color: var(--color-primary-light);
+  border: 2px solid var(--color-primary);
+}
+
+.accessibility-menu-item.reset {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  color: #dc2626;
+}
+
+.accessibility-menu-item.reset:hover {
+  background-color: #fee2e2;
+}
+
+.accessibility-menu-item-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accessibility-menu-item.reset .accessibility-menu-item-icon {
+  color: #dc2626;
+}
+
+.accessibility-menu-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.accessibility-menu-item-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.accessibility-menu-item-description {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+/* Menu Section */
+.accessibility-menu-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Font Controls */
+.accessibility-font-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0 1rem 1rem;
+}
+
+.accessibility-font-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-primary);
+  background-color: white;
+  color: var(--color-primary);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accessibility-font-button:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.accessibility-font-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+  --color-background: #1f2937;
+  --color-text: #f3f4f6;
+}
+
+.dark-mode body {
+  background-color: #111827 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Main container backgrounds */
+.dark-mode main,
+.dark-mode .main-content {
+  background-color: #111827 !important;
+}
+
+/* Sidebar */
+.dark-mode aside,
+.dark-mode nav.sidebar,
+.dark-mode [role="navigation"] {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode aside .border-b,
+.dark-mode aside .border-t {
+  border-color: #374151 !important;
+}
+
+/* Navigation links */
+.dark-mode nav a,
+.dark-mode aside a {
+  color: #d1d5db !important;
+}
+
+.dark-mode nav a:hover,
+.dark-mode aside a:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Active navigation items - foco no item ativo */
+.dark-mode nav a[aria-current="page"],
+.dark-mode aside a[aria-current="page"],
+.dark-mode nav a.active,
+.dark-mode aside a.active {
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Items não ativos no sidebar */
+.dark-mode nav a:not([style*="backgroundColor"]) {
+  color: #d1d5db !important;
+}
+
+.dark-mode nav a:not([style*="backgroundColor"]):hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* 
+ * Item ativo - com inline style de backgroundColor aplicado pelo JS
+ * Fundo ESCURO com texto/ícone BRILHANTE na cor do tema
+ */
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"],
+.dark-mode nav a[style*="borderLeft"] {
+  position: relative;
+  isolation: isolate;
+  font-weight: 700 !important;
+}
+
+/* Overlay gradient com a cor do tema */
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"]::after,
+.dark-mode nav a[style*="borderLeft"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, var(--color-primary) 0%, transparent 100%);
+  opacity: 0.15;
+  pointer-events: none;
+  border-radius: 0.5rem;
+  z-index: 0;
+}
+
+/* Efeito hover no item ativo */
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"]:hover,
+.dark-mode nav a[style*="borderLeft"]:hover {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"]:hover::after,
+.dark-mode nav a[style*="borderLeft"]:hover::after {
+  opacity: 0.25;
+}
+
+/* Ícone do item ativo - BRILHANTE na cor primária */
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"] svg,
+.dark-mode nav a[style*="borderLeft"] svg {
+  color: var(--color-primary) !important;
+  filter: brightness(1.4) saturate(1.3) drop-shadow(0 0 3px var(--color-primary));
+  position: relative;
+  z-index: 1;
+}
+
+/* Texto do item ativo - garante que esteja visível e brilhante */
+.dark-mode nav a[style*="rgba(0, 0, 0, 0.3)"] *,
+.dark-mode nav a[style*="borderLeft"] * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Garante que o texto mantenha a cor primária */
+.dark-mode nav a.font-bold {
+  color: var(--color-primary) !important;
+}
+
+/* Cards and panels */
+.dark-mode .bg-white,
+.dark-mode [class*="bg-white"] {
+  background-color: #1f2937 !important;
+}
+
+.dark-mode .rounded-2xl,
+.dark-mode .card,
+.dark-mode [role="article"] {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Text colors */
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode p,
+.dark-mode span,
+.dark-mode div,
+.dark-mode label {
+  color: #d1d5db;
+}
+
+.dark-mode .text-neutral-800,
+.dark-mode .text-neutral-700,
+.dark-mode .text-neutral-600 {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode .text-neutral-500,
+.dark-mode .text-neutral-400 {
+  color: #9ca3af !important;
+}
+
+/* Buttons */
+.dark-mode button {
+  color: #f3f4f6;
+}
+
+.dark-mode button[class*="outline"] {
+  background-color: transparent !important;
+  border-color: #4b5563 !important;
+  color: #d1d5db !important;
+}
+
+.dark-mode button[class*="outline"]:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode button[class*="ghost"] {
+  color: #d1d5db !important;
+}
+
+.dark-mode button[class*="ghost"]:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Inputs */
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark-mode input:focus,
+.dark-mode textarea:focus,
+.dark-mode select:focus {
+  border-color: var(--color-primary) !important;
+  background-color: #1f2937 !important;
+}
+
+/* Tables */
+.dark-mode table {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark-mode thead {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark-mode th {
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark-mode td {
+  color: #d1d5db !important;
+  border-color: #374151 !important;
+}
+
+.dark-mode tr:hover {
+  background-color: #374151 !important;
+}
+
+.dark-mode tbody tr {
+  border-color: #374151 !important;
+}
+
+/* Borders */
+.dark-mode .border,
+.dark-mode .border-t,
+.dark-mode .border-b,
+.dark-mode .border-l,
+.dark-mode .border-r {
+  border-color: #374151 !important;
+}
+
+.dark-mode .border-neutral-200,
+.dark-mode .border-neutral-300 {
+  border-color: #374151 !important;
+}
+
+/* Shadows */
+.dark-mode .shadow,
+.dark-mode .shadow-sm,
+.dark-mode .shadow-md,
+.dark-mode .shadow-lg {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Hover backgrounds */
+.dark-mode .hover\:bg-neutral-100:hover,
+.dark-mode .hover\:bg-neutral-50:hover {
+  background-color: #374151 !important;
+}
+
+.dark-mode .hover\:bg-neutral-200:hover {
+  background-color: #4b5563 !important;
+}
+
+/* Badges */
+.dark-mode .badge,
+.dark-mode [role="status"] {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+}
+
+/* Modals and Dialogs */
+.dark-mode [role="dialog"],
+.dark-mode .dialog,
+.dark-mode .modal {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Dropdown menus */
+.dark-mode [role="menu"],
+.dark-mode [role="listbox"],
+.dark-mode .dropdown-menu {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark-mode [role="menuitem"],
+.dark-mode [role="option"] {
+  color: #d1d5db !important;
+}
+
+.dark-mode [role="menuitem"]:hover,
+.dark-mode [role="option"]:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Checkboxes and Radio buttons */
+.dark-mode input[type="checkbox"],
+.dark-mode input[type="radio"] {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark-mode input[type="checkbox"]:checked,
+.dark-mode input[type="radio"]:checked {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Select elements */
+.dark-mode select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+}
+
+/* Scrollbars */
+.dark-mode ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.dark-mode ::-webkit-scrollbar-track {
+  background-color: #1f2937;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 6px;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* Toasts and notifications (Sonner) */
+.dark-mode [role="alert"],
+.dark-mode .toast,
+.dark-mode .notification,
+.dark-mode [data-sonner-toast],
+.dark-mode [data-sonner-toaster] {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode [data-sonner-toast] [data-title],
+.dark-mode [data-sonner-toast] [data-description] {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode [data-sonner-toast] [data-button] {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark-mode [data-sonner-toast][data-type="success"] {
+  border-left: 4px solid #10b981 !important;
+}
+
+.dark-mode [data-sonner-toast][data-type="error"] {
+  border-left: 4px solid #ef4444 !important;
+}
+
+.dark-mode [data-sonner-toast][data-type="warning"] {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.dark-mode [data-sonner-toast][data-type="info"] {
+  border-left: 4px solid #3b82f6 !important;
+}
+
+/* Accessibility Menu */
+.dark-mode .accessibility-menu {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+}
+
+.dark-mode .accessibility-menu-header {
+  background-color: #374151;
+  border-bottom-color: #4b5563;
+}
+
+.dark-mode .accessibility-menu-title {
+  color: var(--color-primary);
+}
+
+.dark-mode .accessibility-menu-item-label {
+  color: #f3f4f6;
+}
+
+.dark-mode .accessibility-menu-item-description {
+  color: #9ca3af;
+}
+
+.dark-mode .accessibility-menu-item:hover {
+  background-color: #374151;
+}
+
+.dark-mode .accessibility-menu-item.active {
+  background-color: #374151;
+}
+
+.dark-mode .accessibility-menu-item.reset:hover {
+  background-color: #450a0a;
+}
+
+.dark-mode .accessibility-font-button {
+  background-color: #1f2937;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dark-mode .accessibility-font-button:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.dark-mode .accessibility-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+}
+
+/* Sheet/Drawer components */
+.dark-mode [data-sheet-overlay] {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.dark-mode [data-sheet-content] {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Sheet Header */
+.dark-mode [data-sheet-content] h2,
+.dark-mode [data-sheet-content] [class*="SheetTitle"] {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode [data-sheet-content] p[class*="SheetDescription"] {
+  color: #9ca3af !important;
+}
+
+/* Sheet scroll area - melhor experiência de scroll */
+.dark-mode [data-sheet-content] .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 transparent;
+}
+
+.dark-mode [data-sheet-content] .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-mode [data-sheet-content] .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark-mode [data-sheet-content] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 4px;
+}
+
+.dark-mode [data-sheet-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+/* Modo claro - scroll area */
+[data-sheet-content] .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+[data-sheet-content] .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-sheet-content] .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-sheet-content] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 4px;
+}
+
+[data-sheet-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Theme Selector - Botões de tema (seletor mais específico) */
+.dark-mode [data-sheet-content] button[class*="rounded-xl"][class*="border-2"] {
+  background-color: #1f2937 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark-mode [data-sheet-content] button[class*="rounded-xl"][class*="border-2"]:hover {
+  background-color: #374151 !important;
+  border-color: #6b7280 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Theme Selector - Item selecionado (usando inline style) */
+.dark-mode [data-sheet-content] button[style*="rgba(0, 0, 0, 0.5)"] {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Overlay no item selecionado */
+.dark-mode [data-sheet-content] button[style*="rgba(0, 0, 0, 0.5)"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-primary) 0%, transparent 100%);
+  opacity: 0.15;
+  border-radius: 0.75rem;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Hover no item selecionado */
+.dark-mode [data-sheet-content] button[style*="rgba(0, 0, 0, 0.5)"]:hover::before {
+  opacity: 0.25;
+}
+
+/* Garantir que conteúdo fique sobre o overlay */
+.dark-mode [data-sheet-content] button[style*="rgba(0, 0, 0, 0.5)"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Theme Selector - Textos dentro dos botões */
+.dark-mode [data-sheet-content] button[class*="rounded-xl"] h3 {
+  color: #f3f4f6 !important;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.dark-mode [data-sheet-content] button[class*="rounded-xl"] p {
+  color: #9ca3af !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Preview de cores - mantém as cores originais */
+.dark-mode [data-sheet-content] button[class*="rounded-xl"] > div > div > div[class*="h-12"] {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+/* Ícone de check no tema selecionado */
+.dark-mode [data-sheet-content] button[class*="rounded-xl"] div[class*="rounded-full"] {
+  position: relative;
+  z-index: 1;
+}
+
+.dark-mode [data-sheet-content] button[class*="rounded-xl"] svg.lucide-check {
+  color: white !important;
+}
+
+/* Theme Selector - Card de dica no final */
+.dark-mode [data-sheet-content] .bg-neutral-50 {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+}
+
+.dark-mode [data-sheet-content] .bg-neutral-50 p {
+  color: #d1d5db !important;
+}
+
+.dark-mode [data-sheet-content] .bg-neutral-50 strong {
+  color: #f3f4f6 !important;
+}
+
+/* Bordas gerais dentro do sheet */
+.dark-mode [data-sheet-content] .border-neutral-200 {
+  border-color: #4b5563 !important;
+}
+
+/* Bordas de botões não selecionados */
+.dark-mode [data-sheet-content] button[class*="border-neutral-200"] {
+  border-color: #4b5563 !important;
+}
+
+/* Shadcn/UI specific classes */
+.dark-mode .bg-background {
+  background-color: #1f2937 !important;
+}
+
+.dark-mode .bg-accent {
+  background-color: #374151 !important;
+}
+
+.dark-mode .bg-muted {
+  background-color: #374151 !important;
+}
+
+.dark-mode .bg-muted\/50 {
+  background-color: rgba(55, 65, 81, 0.5) !important;
+}
+
+.dark-mode .text-foreground {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode .text-muted-foreground {
+  color: #9ca3af !important;
+}
+
+.dark-mode .text-accent-foreground {
+  color: #f3f4f6 !important;
+}
+
+.dark-mode .border-input {
+  border-color: #4b5563 !important;
+}
+
+.dark-mode .ring-ring {
+  --tw-ring-color: #4b5563 !important;
+}
+
+/* Focus states */
+.dark-mode .focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: #4b5563 !important;
+}
+
+/* Specific background utilities */
+.dark-mode .hover\:bg-accent:hover {
+  background-color: #374151 !important;
+}
+
+.dark-mode .hover\:bg-muted\/50:hover {
+  background-color: rgba(55, 65, 81, 0.5) !important;
+}
+
+.dark-mode .data-\[state\=selected\]\:bg-muted[data-state="selected"] {
+  background-color: #374151 !important;
+}
+
+/* Footer bar */
+.dark-mode footer,
+.dark-mode .footer {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+/* SVG Icons */
+.dark-mode svg {
+  color: currentColor;
+}
+
+/* Logo and brand elements */
+.dark-mode .logo {
+  filter: brightness(0.9);
+}
+
+/* Code and pre elements */
+.dark-mode code,
+.dark-mode pre {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+  border-color: #4b5563 !important;
+}
+
+/* Links */
+.dark-mode a {
+  color: var(--color-primary);
+}
+
+.dark-mode a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --color-primary: #0000ff;
+  --color-primary-hover: #0000cc;
+  --color-background: #ffffff;
+  --color-text: #000000;
+}
+
+.high-contrast * {
+  border-color: #000000 !important;
+}
+
+.high-contrast .accessibility-menu {
+  border: 3px solid #000000;
+}
+
+.high-contrast .accessibility-menu-item {
+  border: 2px solid transparent;
+}
+
+.high-contrast .accessibility-menu-item:hover {
+  background-color: #ffff00;
+  border-color: #000000;
+}
+
+.high-contrast .accessibility-menu-item.active {
+  background-color: #ffff00;
+  border-color: #000000;
+}
+
+.high-contrast .accessibility-menu-item-label,
+.high-contrast .accessibility-menu-item-description {
+  color: #000000;
+}
+
+.high-contrast .accessibility-font-button {
+  border-width: 3px;
+  font-weight: 700;
+}
+
+/* Dark Mode + High Contrast */
+.dark-mode.high-contrast {
+  --color-primary: #00ffff;
+  --color-primary-hover: #00cccc;
+  --color-background: #000000;
+  --color-text: #ffffff;
+}
+
+.dark-mode.high-contrast body {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.dark-mode.high-contrast * {
+  border-color: #ffffff !important;
+}
+
+.dark-mode.high-contrast .accessibility-menu {
+  background-color: #000000;
+  border: 3px solid #ffffff;
+}
+
+.dark-mode.high-contrast .accessibility-menu-item:hover {
+  background-color: #0000ff;
+  border-color: #ffffff;
+}
+
+.dark-mode.high-contrast .accessibility-menu-item.active {
+  background-color: #0000ff;
+  border-color: #ffffff;
+}
+
+.dark-mode.high-contrast .accessibility-menu-item-label,
+.dark-mode.high-contrast .accessibility-menu-item-description {
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .accessibility-menu {
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    bottom: 5.5rem;
+  }
+
+  .accessibility-floating-button {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
