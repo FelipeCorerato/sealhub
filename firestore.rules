@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===== COMPANIES (Clientes) =====
+    match /companies/{companyId} {
+      // Qualquer usuário autenticado pode ler
+      allow read: if request.auth != null;
+      
+      // Qualquer usuário autenticado pode criar
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.cnpj is string
+        && request.resource.data.name is string
+        && request.resource.data.address is string
+        && request.resource.data.type in ['headquarters', 'branch']
+        && request.resource.data.status in ['active', 'closed', 'suspended'];
+      
+      // Qualquer usuário autenticado pode atualizar
+      allow update: if request.auth != null
+        && request.resource.data.cnpj == resource.data.cnpj; // CNPJ não pode mudar
+      
+      // Apenas o criador ou admin pode deletar
+      allow delete: if request.auth != null
+        && resource.data.createdBy == request.auth.uid;
+    }
+    
+    // ===== CAMPAIGNS (Futuro) =====
+    match /campaigns/{campaignId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+    
+    // ===== CAMPAIGN_CLIENTS (Futuro) =====
+    match /campaignClients/{campaignClientId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+    
+    // ===== SEALS (Futuro) =====
+    match /seals/{sealId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+  }
+}
+

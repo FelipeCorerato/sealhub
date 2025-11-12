@@ -1,4 +1,4 @@
-import type { Company } from '@/types'
+import type { CompanyData } from '@/types'
 import { onlyNumbers } from './cnpj'
 
 interface BrasilAPIResponse {
@@ -22,8 +22,9 @@ interface BrasilAPIResponse {
 /**
  * Busca dados de CNPJ na API da Receita Federal via BrasilAPI
  * Documentação: https://brasilapi.com.br/docs#tag/CNPJ
+ * @returns Dados básicos da empresa (sem metadados do Firestore)
  */
-export async function fetchCNPJFromReceita(cnpj: string): Promise<Company> {
+export async function fetchCNPJFromReceita(cnpj: string): Promise<CompanyData> {
   const cleanCNPJ = onlyNumbers(cnpj)
 
   if (cleanCNPJ.length !== 14) {
