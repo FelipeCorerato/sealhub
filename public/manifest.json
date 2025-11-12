@@ -1,0 +1,18 @@
+{
+  "name": "VGSA - Gestão de Selos",
+  "short_name": "VGSA",
+  "description": "Sistema de Gestão de Selos e Campanhas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF6EF",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
