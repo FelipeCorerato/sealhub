@@ -80,30 +80,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Redirecionar para clientes
       navigate('/clientes')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro no login:', error)
       
       // Tratamento de erros específicos do Firebase
       let errorMessage = 'Verifique suas credenciais'
       
-      switch (error.code) {
-        case 'auth/invalid-credential':
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          errorMessage = 'Email ou senha incorretos'
-          break
-        case 'auth/user-disabled':
-          errorMessage = 'Usuário desabilitado'
-          break
-        case 'auth/too-many-requests':
-          errorMessage = 'Muitas tentativas. Tente novamente mais tarde'
-          break
-        case 'auth/network-request-failed':
-          errorMessage = 'Erro de conexão. Verifique sua internet'
-          break
-        case 'auth/invalid-email':
-          errorMessage = 'Email inválido'
-          break
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string }
+        
+        switch (firebaseError.code) {
+          case 'auth/invalid-credential':
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+            errorMessage = 'Email ou senha incorretos'
+            break
+          case 'auth/user-disabled':
+            errorMessage = 'Usuário desabilitado'
+            break
+          case 'auth/too-many-requests':
+            errorMessage = 'Muitas tentativas. Tente novamente mais tarde'
+            break
+          case 'auth/network-request-failed':
+            errorMessage = 'Erro de conexão. Verifique sua internet'
+            break
+          case 'auth/invalid-email':
+            errorMessage = 'Email inválido'
+            break
+        }
       }
       
       throw new Error(errorMessage)
@@ -125,27 +129,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Redirecionar para clientes
       navigate('/clientes')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro no login com Google:', error)
       
       let errorMessage = 'Não foi possível fazer login com Google'
       
-      switch (error.code) {
-        case 'auth/popup-closed-by-user':
-          errorMessage = 'Login cancelado pelo usuário'
-          break
-        case 'auth/popup-blocked':
-          errorMessage = 'Pop-up bloqueado. Permita pop-ups para este site'
-          break
-        case 'auth/cancelled-popup-request':
-          // Não mostrar erro se o usuário cancelou
-          return
-        case 'auth/account-exists-with-different-credential':
-          errorMessage = 'Esta conta já existe com outro método de login'
-          break
-        case 'auth/network-request-failed':
-          errorMessage = 'Erro de conexão. Verifique sua internet'
-          break
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string }
+        
+        switch (firebaseError.code) {
+          case 'auth/popup-closed-by-user':
+            errorMessage = 'Login cancelado pelo usuário'
+            break
+          case 'auth/popup-blocked':
+            errorMessage = 'Pop-up bloqueado. Permita pop-ups para este site'
+            break
+          case 'auth/cancelled-popup-request':
+            // Não mostrar erro se o usuário cancelou
+            return
+          case 'auth/account-exists-with-different-credential':
+            errorMessage = 'Esta conta já existe com outro método de login'
+            break
+          case 'auth/network-request-failed':
+            errorMessage = 'Erro de conexão. Verifique sua internet'
+            break
+        }
       }
       
       throw new Error(errorMessage)
@@ -183,21 +191,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
 
       navigate('/clientes')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro no registro:', error)
       
       let errorMessage = 'Não foi possível criar a conta'
       
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          errorMessage = 'Este email já está em uso'
-          break
-        case 'auth/weak-password':
-          errorMessage = 'Senha muito fraca. Use no mínimo 6 caracteres'
-          break
-        case 'auth/invalid-email':
-          errorMessage = 'Email inválido'
-          break
+      if (error && typeof error === 'object' && 'code' in error) {
+        const firebaseError = error as { code: string }
+        
+        switch (firebaseError.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'Este email já está em uso'
+            break
+          case 'auth/weak-password':
+            errorMessage = 'Senha muito fraca. Use no mínimo 6 caracteres'
+            break
+          case 'auth/invalid-email':
+            errorMessage = 'Email inválido'
+            break
+        }
       }
       
       throw new Error(errorMessage)

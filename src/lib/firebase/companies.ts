@@ -23,7 +23,7 @@ const COLLECTION_NAME = 'companies'
 /**
  * Converte Timestamp do Firestore para Date
  */
-function timestampToDate(timestamp: any): Date {
+function timestampToDate(timestamp: Timestamp | Date | null | undefined): Date {
   if (timestamp instanceof Timestamp) {
     return timestamp.toDate()
   }
