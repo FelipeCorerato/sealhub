@@ -493,6 +493,15 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Backgrounds neutros */
+.dark-mode .bg-neutral-50 {
+  background-color: #374151 !important;
+}
+
+.dark-mode .bg-neutral-100 {
+  background-color: #374151 !important;
+}
+
 /* Hover backgrounds */
 .dark-mode .hover\:bg-neutral-100:hover,
 .dark-mode .hover\:bg-neutral-50:hover {
@@ -912,6 +921,12 @@
 
 .dark-mode a:hover {
   color: var(--color-primary-hover);
+}
+
+/* CNPJ Loading Disclaimer - Dark Mode */
+.dark-mode .cnpj-loading-disclaimer {
+  background-color: rgba(55, 65, 81, 0.6) !important;
+  border-color: var(--color-primary) !important;
 }
 
 /* Auth Pages (Login/Register) - Dark Mode */

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, Info } from 'lucide-react'
 import {
   formatCNPJ,
   validateCNPJ,
@@ -42,6 +42,44 @@ export function SearchCNPJ({ onSearch, isLoading = false }: SearchCNPJProps) {
       <h3 className="mb-4 text-lg font-semibold text-neutral-800">
         Buscar por CNPJ
       </h3>
+      
+      {/* Disclaimer sobre demora na API */}
+      {!isLoading && (
+        <div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5">
+          <div className="flex gap-3 items-start">
+            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
+            <div className="flex-1">
+              <p className="text-sm text-neutral-600 leading-relaxed">
+                A consulta à API da Receita Federal pode levar alguns segundos. Aguarde o carregamento.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mensagem de loading ativa */}
+      {isLoading && (
+        <div 
+          className="cnpj-loading-disclaimer mb-4 rounded-lg border-2 p-4" 
+          style={{ 
+            borderColor: 'var(--color-primary)', 
+            backgroundColor: 'var(--color-primary-light)' 
+          }}
+        >
+          <div className="flex gap-3 items-center">
+            <Loader2 className="h-5 w-5 shrink-0 animate-spin" style={{ color: 'var(--color-primary)' }} />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-neutral-700 mb-1">
+                Consultando dados na Receita Federal...
+              </p>
+              <p className="text-xs text-neutral-600">
+                Este processo pode levar até 30 segundos. Por favor, não feche esta tela.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex gap-3">
         <div className="flex-1">
           <Input
