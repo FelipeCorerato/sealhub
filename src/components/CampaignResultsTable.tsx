@@ -16,7 +16,6 @@ interface CampaignResultsTableProps {
 
 export function CampaignResultsTable({
   campaigns,
-  onViewDetails,
   onAddMore,
   onGenerateLabels,
 }: CampaignResultsTableProps) {
