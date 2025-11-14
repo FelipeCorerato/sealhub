@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { printSeals } from '@/lib/seal-generator'
 
 export function CampaignsPage() {
   const { user } = useAuth()
@@ -168,6 +169,17 @@ export function CampaignsPage() {
 
     setIsSaving(true)
     try {
+      // Filtra apenas as empresas selecionadas
+      const selectedCompanies = companies.filter((company) =>
+        selectedIds.has(company.id)
+      )
+
+      if (selectedCompanies.length === 0) {
+        toast.error('Erro ao obter dados dos clientes selecionados')
+        return
+      }
+
+      // Cria a campanha no Firestore
       const campaign = await createCampaign({
         name: campaignName,
         sender,
@@ -181,6 +193,22 @@ export function CampaignsPage() {
       toast.success('Campanha criada com sucesso!', {
         description: `"${campaign.name}" foi criada com ${selectedIds.size} cliente(s).`,
       })
+
+      // Gera os selos em PDF e abre a janela de impressão
+      toast.info('Gerando selos...', {
+        description: 'A janela de impressão será aberta em instantes.',
+      })
+
+      // Pequeno delay para permitir que o toast apareça
+      setTimeout(() => {
+        printSeals({
+          campaignName,
+          sender,
+          observation,
+          instructions,
+          companies: selectedCompanies,
+        })
+      }, 500)
 
       // Limpa o formulário
       setCampaignName('')
@@ -312,9 +340,33 @@ export function CampaignsPage() {
     toast.info('Adicionar mais clientes em desenvolvimento')
   }
 
-  const handleGenerateLabels = (campaign: CampaignWithCompanies) => {
-    console.log('Gerar etiquetas:', campaign)
-    toast.info('Geração de etiquetas em desenvolvimento')
+  const handleGenerateLabels = async (campaign: CampaignWithCompanies) => {
+    try {
+      if (!campaign.companies || campaign.companies.length === 0) {
+        toast.error('Esta campanha não possui clientes vinculados')
+        return
+      }
+
+      toast.info('Gerando selos...', {
+        description: 'A janela de impressão será aberta em instantes.',
+      })
+
+      // Pequeno delay para permitir que o toast apareça
+      setTimeout(() => {
+        printSeals({
+          campaignName: campaign.name,
+          sender: campaign.sender,
+          observation: campaign.observation,
+          instructions: campaign.instructions,
+          companies: campaign.companies,
+        })
+      }, 500)
+    } catch (error) {
+      console.error('Erro ao gerar selos:', error)
+      toast.error('Erro ao gerar selos', {
+        description: 'Não foi possível gerar os selos desta campanha.',
+      })
+    }
   }
 
   const selectedCount = selectedIds.size
