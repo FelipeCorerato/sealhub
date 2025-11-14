@@ -914,6 +914,44 @@
   color: var(--color-primary-hover);
 }
 
+/* Auth Pages (Login/Register) - Dark Mode */
+/* Background gradiente das páginas de autenticação */
+.dark-mode div[class*="min-h-screen"][class*="justify-center"] {
+  background: linear-gradient(to bottom right, #111827, #1f2937) !important;
+}
+
+/* Cards de login/registro */
+.dark-mode div[class*="min-h-screen"] div[class*="rounded-3xl"] {
+  background-color: #1f2937 !important;
+}
+
+/* Títulos nas páginas de auth */
+.dark-mode div[class*="min-h-screen"] h1 {
+  color: #f3f4f6 !important;
+}
+
+/* Descrições e labels nas páginas de auth */
+.dark-mode div[class*="min-h-screen"] p,
+.dark-mode div[class*="min-h-screen"] label {
+  color: #d1d5db !important;
+}
+
+/* Divisores nas páginas de auth */
+.dark-mode div[class*="min-h-screen"] div[class*="border-t"] {
+  border-color: #374151 !important;
+}
+
+/* Texto do divisor "Ou continue com" */
+.dark-mode div[class*="min-h-screen"] span[class*="bg-white"] {
+  background-color: #1f2937 !important;
+  color: #9ca3af !important;
+}
+
+/* Footer das páginas de auth */
+.dark-mode div[class*="min-h-screen"] > div > p {
+  color: #9ca3af !important;
+}
+
 /* High Contrast Mode */
 .high-contrast {
   --color-primary: #0000ff;
