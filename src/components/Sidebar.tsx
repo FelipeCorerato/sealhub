@@ -98,6 +98,9 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
+            <div className="flex justify-center">
+              <ThemeSelector />
+            </div>
             <Button
               variant="ghost"
               onClick={handleLogout}
@@ -106,9 +109,6 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
             >
               <LogOut className="h-5 w-5" />
             </Button>
-            <div className="flex justify-center">
-              <ThemeSelector />
-            </div>
           </div>
         )}
       </div>
