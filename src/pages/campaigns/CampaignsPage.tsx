@@ -4,6 +4,8 @@ import { TopBar } from '@/components/TopBar'
 import { CampaignForm } from '@/components/CampaignForm'
 import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ClientSelectionTable } from '@/components/ClientSelectionTable'
+import { CampaignSearchBar } from '@/components/CampaignSearchBar'
+import { CampaignResultsTable } from '@/components/CampaignResultsTable'
 import { Button } from '@/components/ui/button'
 import { FileText } from 'lucide-react'
 import type { Company, CampaignInstructions } from '@/types'
@@ -12,12 +14,21 @@ import {
   searchCompaniesByCNPJ,
   getAllCompanies,
 } from '@/lib/firebase/companies'
-import { createCampaign } from '@/lib/firebase/campaigns'
+import {
+  createCampaign,
+  searchCampaignsWithCompaniesByName,
+  searchCampaignsByCompanyName,
+  getAllCampaignsWithCompanies,
+  type CampaignWithCompanies,
+} from '@/lib/firebase/campaigns'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 export function CampaignsPage() {
   const { user } = useAuth()
+  const [mode, setMode] = useState<'add' | 'search'>('add')
+  
+  // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
   const [sender, setSender] = useState('')
   const [observation, setObservation] = useState('')
@@ -32,6 +43,10 @@ export function CampaignsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Estados para busca de campanhas
+  const [searchResults, setSearchResults] = useState<CampaignWithCompanies[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
@@ -190,6 +205,7 @@ export function CampaignsPage() {
   }
 
   const handleNewCampaign = () => {
+    setMode('add')
     // Reset form
     setCampaignName('')
     setSender('')
@@ -202,12 +218,100 @@ export function CampaignsPage() {
     })
     setSelectedIds(new Set())
     setCompanies([])
+    setSearchResults([])
   }
 
   const handleSearchCampaign = () => {
-    console.log('Buscar campanha')
-    // Implementar futuramente
-    toast.info('Funcionalidade em desenvolvimento')
+    setMode('search')
+    setSearchResults([])
+  }
+
+  // Handlers para busca de campanhas
+  const handleSearchByCampaignName = async (name: string) => {
+    setIsSearching(true)
+    try {
+      const results = await searchCampaignsWithCompaniesByName(name)
+      setSearchResults(results)
+
+      if (results.length === 0) {
+        toast.info('Nenhum resultado encontrado', {
+          description: 'Não há campanhas com este nome.',
+        })
+      } else {
+        toast.success(`${results.length} campanha(s) encontrada(s)`)
+      }
+    } catch (error) {
+      console.error('Erro ao buscar campanhas:', error)
+      toast.error('Erro na busca', {
+        description: 'Não foi possível buscar as campanhas.',
+      })
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearchByClientName = async (name: string) => {
+    setIsSearching(true)
+    try {
+      const results = await searchCampaignsByCompanyName(name)
+      setSearchResults(results)
+
+      if (results.length === 0) {
+        toast.info('Nenhum resultado encontrado', {
+          description: 'Não há campanhas vinculadas a clientes com este nome.',
+        })
+      } else {
+        toast.success(`${results.length} campanha(s) encontrada(s)`)
+      }
+    } catch (error) {
+      console.error('Erro ao buscar campanhas:', error)
+      toast.error('Erro na busca', {
+        description: 'Não foi possível buscar as campanhas.',
+      })
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleListAllCampaigns = async () => {
+    setIsSearching(true)
+    try {
+      const results = await getAllCampaignsWithCompanies()
+      setSearchResults(results)
+
+      if (results.length === 0) {
+        toast.info('Nenhuma campanha cadastrada', {
+          description: 'Crie campanhas para visualizá-las aqui.',
+        })
+      } else {
+        toast.success(`${results.length} campanha(s) disponíveis`)
+      }
+    } catch (error) {
+      console.error('Erro ao listar campanhas:', error)
+      toast.error('Erro ao listar', {
+        description: 'Não foi possível listar as campanhas.',
+      })
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleViewDetails = (campaign: CampaignWithCompanies) => {
+    console.log('Ver detalhes:', campaign)
+    toast.info('Visualização de detalhes em desenvolvimento')
+  }
+
+  const handleAddMore = (campaign: CampaignWithCompanies) => {
+    console.log('Adicionar mais clientes:', campaign)
+    toast.info('Adicionar mais clientes em desenvolvimento')
+  }
+
+  const handleGenerateLabels = (campaign: CampaignWithCompanies) => {
+    console.log('Gerar etiquetas:', campaign)
+    toast.info('Geração de etiquetas em desenvolvimento')
   }
 
   const selectedCount = selectedIds.size
@@ -220,48 +324,91 @@ export function CampaignsPage() {
           <TopBar
             title="Painel de Campanhas"
             type="campaigns"
-            mode="add"
+            mode={mode}
             onNovoCliente={handleNewCampaign}
             onBuscarCliente={handleSearchCampaign}
           />
 
-          {/* Formulário da Campanha */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <CampaignForm
-              name={campaignName}
-              sender={sender}
-              observation={observation}
-              instructions={instructions}
-              onNameChange={setCampaignName}
-              onSenderChange={setSender}
-              onObservationChange={setObservation}
-              onInstructionChange={handleInstructionChange}
-            />
-          </div>
+          {mode === 'add' ? (
+            <>
+              {/* Formulário da Campanha */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <CampaignForm
+                  name={campaignName}
+                  sender={sender}
+                  observation={observation}
+                  instructions={instructions}
+                  onNameChange={setCampaignName}
+                  onSenderChange={setSender}
+                  onObservationChange={setObservation}
+                  onInstructionChange={handleInstructionChange}
+                />
+              </div>
 
-          {/* Procurar Cliente */}
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-neutral-800">
-              Selecionar Clientes
-            </h3>
-            <ClientSearchBar
-              onSearchByName={handleSearchByName}
-              onSearchByCNPJ={handleSearchByCNPJ}
-              onListAll={handleListAll}
-              isLoading={isLoading}
-            />
-          </div>
+              {/* Procurar Cliente */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h3 className="mb-4 text-lg font-semibold text-neutral-800">
+                  Selecionar Clientes
+                </h3>
+                <ClientSearchBar
+                  onSearchByName={handleSearchByName}
+                  onSearchByCNPJ={handleSearchByCNPJ}
+                  onListAll={handleListAll}
+                  isLoading={isLoading}
+                />
+              </div>
 
-          {/* Tabela de Seleção de Clientes */}
-          <ClientSelectionTable
-            companies={companies}
-            selectedIds={selectedIds}
-            onToggleClient={handleToggleClient}
-          />
+              {/* Tabela de Seleção de Clientes */}
+              <ClientSelectionTable
+                companies={companies}
+                selectedIds={selectedIds}
+                onToggleClient={handleToggleClient}
+              />
+            </>
+          ) : (
+            <>
+              {/* Procurar Campanha */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h3 className="mb-4 text-lg font-semibold text-neutral-800">
+                  Procurar Campanha
+                </h3>
+                <CampaignSearchBar
+                  onSearchByCampaignName={handleSearchByCampaignName}
+                  onSearchByClientName={handleSearchByClientName}
+                  onListAll={handleListAllCampaigns}
+                  isLoading={isSearching}
+                />
+              </div>
+
+              {/* Resultados da Busca */}
+              {searchResults.length > 0 && (
+                <div className="space-y-4">
+                  <p className="text-sm italic text-neutral-600">
+                    {searchResults.length} Resultado(s) encontrado(s) para "
+                    {searchResults[0]?.name || 'busca'}"
+                  </p>
+                  <CampaignResultsTable
+                    campaigns={searchResults}
+                    onViewDetails={handleViewDetails}
+                    onAddMore={handleAddMore}
+                    onGenerateLabels={handleGenerateLabels}
+                  />
+                </div>
+              )}
+
+              {!isSearching && searchResults.length === 0 && (
+                <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+                  <p className="text-neutral-500">
+                    Use os campos acima para buscar campanhas.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Footer - Gerar Selos */}
-        {selectedCount > 0 && (
+        {/* Footer - Gerar Selos (somente no modo adicionar) */}
+        {mode === 'add' && selectedCount > 0 && (
           <div className="fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 lg:left-64">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <div>

@@ -13,7 +13,8 @@ import {
   type DocumentData,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import type { Campaign, CreateCampaignData, UpdateCampaignData } from '@/types'
+import type { Campaign, CreateCampaignData, UpdateCampaignData, Company } from '@/types'
+import { getCompanyById } from './companies'
 
 const COLLECTION_NAME = 'campaigns'
 
@@ -202,5 +203,98 @@ export async function getCampaignsByUser(userId: string): Promise<Campaign[]> {
   })
 
   return campaigns
+}
+
+/**
+ * Tipo extendido de Campaign com os clientes populados
+ */
+export interface CampaignWithCompanies extends Campaign {
+  companies: Company[]
+}
+
+/**
+ * Popula os dados das empresas em uma campanha
+ */
+async function populateCampaignCompanies(
+  campaign: Campaign,
+): Promise<CampaignWithCompanies> {
+  const companies: Company[] = []
+
+  for (const companyId of campaign.companyIds) {
+    try {
+      const company = await getCompanyById(companyId)
+      if (company) {
+        companies.push(company)
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar empresa ${companyId}:`, error)
+    }
+  }
+
+  return {
+    ...campaign,
+    companies,
+  }
+}
+
+/**
+ * Busca campanhas por nome com clientes populados
+ */
+export async function searchCampaignsWithCompaniesByName(
+  searchTerm: string,
+): Promise<CampaignWithCompanies[]> {
+  const campaigns = await searchCampaignsByName(searchTerm)
+  const campaignsWithCompanies: CampaignWithCompanies[] = []
+
+  for (const campaign of campaigns) {
+    const populated = await populateCampaignCompanies(campaign)
+    campaignsWithCompanies.push(populated)
+  }
+
+  return campaignsWithCompanies
+}
+
+/**
+ * Busca campanhas por nome do cliente
+ */
+export async function searchCampaignsByCompanyName(
+  companyNameSearch: string,
+): Promise<CampaignWithCompanies[]> {
+  // Busca todas as campanhas
+  const allCampaigns = await getAllCampaigns()
+  const normalizedSearch = companyNameSearch.toLowerCase()
+  const matchingCampaigns: CampaignWithCompanies[] = []
+
+  for (const campaign of allCampaigns) {
+    const populated = await populateCampaignCompanies(campaign)
+    
+    // Verifica se alguma empresa da campanha corresponde à busca
+    const hasMatchingCompany = populated.companies.some((company) =>
+      company.name.toLowerCase().includes(normalizedSearch),
+    )
+
+    if (hasMatchingCompany) {
+      matchingCampaigns.push(populated)
+    }
+  }
+
+  return matchingCampaigns
+}
+
+/**
+ * Lista todas as campanhas com clientes populados
+ */
+export async function getAllCampaignsWithCompanies(): Promise<
+  CampaignWithCompanies[]
+> {
+  const campaigns = await getAllCampaigns()
+  const campaignsWithCompanies: CampaignWithCompanies[] = []
+
+  for (const campaign of campaigns) {
+    const populated = await populateCampaignCompanies(campaign)
+    campaignsWithCompanies.push(populated)
+  }
+
+  return campaignsWithCompanies
 }
 
