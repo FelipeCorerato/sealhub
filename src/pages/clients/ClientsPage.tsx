@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { TopBar } from '@/components/TopBar'
 import { SearchCNPJ } from '@/components/SearchCNPJ'
 import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ResultsTable } from '@/components/ResultsTable'
 import { FooterBar } from '@/components/FooterBar'
+import { CompanyEditForm } from '@/components/CompanyEditForm'
 import type { Company, CompanyData } from '@/types'
-import { fetchCNPJFromReceita, validateCNPJDigits } from '@/lib/cnpj-api'
+import { validateCNPJDigits, fetchRelatedCNPJs } from '@/lib/cnpj-api'
 import {
   searchCompaniesByName,
-  searchCompaniesByCNPJ,
-  upsertCompanyFromReceita,
-  cnpjExists,
+  searchRelatedCompanies,
+  saveMatrizAndBranches,
+  updateCompany,
 } from '@/lib/firebase/companies'
+import { isHeadquarters } from '@/lib/cnpj'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
@@ -26,14 +28,30 @@ export function ClientsPage() {
   const [mode, setMode] = useState<PageMode>('add')
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company>()
+  const [selectedBranchCNPJs, setSelectedBranchCNPJs] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
-  const [receitaData, setReceitaData] = useState<CompanyData | null>(null)
+  const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ name: '', address: '' })
+  const editFormRef = useRef<HTMLDivElement | null>(null)
+
+  const resetEditForm = () => {
+    setEditingCompanyId(null)
+    setEditForm({ name: '', address: '' })
+  }
+
+  useEffect(() => {
+    if (mode === 'search' && editingCompanyId) {
+      requestAnimationFrame(() => {
+        editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }, [editingCompanyId, mode])
 
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
     setSelectedCompany(undefined)
     setCompanies([])
-    setReceitaData(null)
+    resetEditForm()
 
     try {
       // Se estiver no modo "add", busca na API da Receita Federal
@@ -46,42 +64,84 @@ export function ClientsPage() {
           return
         }
 
-        // Verifica se o CNPJ já existe no banco
-        const exists = await cnpjExists(cnpj)
-        if (exists) {
-          toast.error('CNPJ já cadastrado', {
-            description: 'Este CNPJ já existe no sistema. Use "Buscar Cliente" para encontrá-lo.',
-          })
+        // Busca também empresas relacionadas já cadastradas no banco de dados
+        const existingRelated = await searchRelatedCompanies(cnpj)
+        
+        // Busca na API da Receita Federal
+        const relatedData = await fetchRelatedCNPJs(cnpj)
+        
+        if (relatedData.length === 0) {
+          toast.error('CNPJ não encontrado')
           return
         }
-
-        // Busca na API da Receita Federal
-        const companyData = await fetchCNPJFromReceita(cnpj)
-        setReceitaData(companyData)
         
-        // Cria um objeto Company temporário para exibição
-        const tempCompany: Company = {
-          ...companyData,
-          id: 'temp',
+        // Cria objetos Company temporários da API
+        const tempCompanies: Company[] = relatedData.map((data) => ({
+          ...data,
+          id: 'temp-' + data.cnpj,
           createdAt: new Date(),
           createdBy: user?.id || '',
           updatedAt: new Date(),
-        }
+        }))
         
-        setCompanies([tempCompany])
+        // Combina resultados: empresas da API + empresas já cadastradas no banco
+        // Remove duplicatas (empresas que estão na API e no banco)
+        const existingCNPJs = new Set(existingRelated.map(c => c.cnpj))
+        const newFromAPI = tempCompanies.filter(c => !existingCNPJs.has(c.cnpj))
         
-        toast.success('CNPJ encontrado!', {
-          description: companyData.name,
+        // Combina e ordena: matriz primeiro, depois filiais
+        const allCompanies = [...existingRelated, ...newFromAPI].sort((a, b) => {
+          const cnpjA = a.cnpj.replace(/\D/g, '')
+          const cnpjB = b.cnpj.replace(/\D/g, '')
+          return cnpjA.localeCompare(cnpjB)
         })
+        
+        setCompanies(allCompanies)
+        
+        // Inicializa todas as filiais como selecionadas por padrão
+        const filiais = allCompanies.filter(c => c.type === 'branch')
+        const initialSelected = new Set(filiais.map(f => f.cnpj))
+        setSelectedBranchCNPJs(initialSelected)
+        
+        const isMatriz = isHeadquarters(cnpj)
+        const filiaisCount = allCompanies.length - 1
+        
+        if (isMatriz) {
+          if (filiaisCount > 0) {
+            toast.success('Matriz encontrada!', {
+              description: `${relatedData[0].name} + ${filiaisCount} filial(is) relacionada(s)`,
+            })
+          } else {
+            toast.success('Matriz encontrada!', {
+              description: relatedData[0].name,
+            })
+          }
+        } else {
+          toast.success('Filial encontrada!', {
+            description: `Exibindo matriz e ${filiaisCount} filial(is) relacionada(s)`,
+          })
+        }
       } else {
-        // Modo "search" busca no Firestore
-        const results = await searchCompaniesByCNPJ(cnpj)
+        // Modo "search" busca empresas relacionadas no Firestore
+        const results = await searchRelatedCompanies(cnpj)
         setCompanies(results)
+        
+        // No modo search não precisa selecionar filiais (já estão todas cadastradas)
+        setSelectedBranchCNPJs(new Set())
         
         if (results.length === 0) {
           toast.info('Nenhum resultado encontrado', {
             description: 'Não há clientes cadastrados com este CNPJ.',
           })
+        } else {
+          const isMatriz = isHeadquarters(cnpj)
+          if (isMatriz) {
+            toast.success(`Matriz e ${results.length - 1} filial(is) encontrada(s)`)
+          } else {
+            toast.success(`Matriz e filiais relacionadas encontradas`, {
+              description: `${results.length} empresa(s) no total`,
+            })
+          }
         }
       }
     } catch (error) {
@@ -101,7 +161,8 @@ export function ClientsPage() {
   const handleSearchByName = async (name: string) => {
     setIsLoading(true)
     setSelectedCompany(undefined)
-    setReceitaData(null)
+    setSelectedBranchCNPJs(new Set())
+    resetEditForm()
     
     try {
       // Busca no Firestore
@@ -129,7 +190,8 @@ export function ClientsPage() {
   const handleListAll = async () => {
     setIsLoading(true)
     setSelectedCompany(undefined)
-    setReceitaData(null)
+    setSelectedBranchCNPJs(new Set())
+    resetEditForm()
     
     try {
       const { getAllCompanies } = await import('@/lib/firebase/companies')
@@ -158,37 +220,143 @@ export function ClientsPage() {
     setSelectedCompany(company)
   }
 
-  const handleSave = async () => {
-    if (!selectedCompany || !user) {
+  const handleToggleBranch = (cnpj: string, checked: boolean) => {
+    setSelectedBranchCNPJs((prev) => {
+      const newSet = new Set(prev)
+      if (checked) {
+        newSet.add(cnpj)
+      } else {
+        newSet.delete(cnpj)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAllBranches = () => {
+    const filiais = companies.filter(c => c.type === 'branch')
+    const allBranchCNPJs = new Set(filiais.map(f => f.cnpj))
+    setSelectedBranchCNPJs(allBranchCNPJs)
+  }
+
+  const handleDeselectAllBranches = () => {
+    setSelectedBranchCNPJs(new Set())
+  }
+
+  const handleEditFormChange = (field: 'name' | 'address', value: string) => {
+    setEditForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleEditCompany = (company: Company) => {
+    if (mode !== 'search') {
       return
     }
+    setSelectedCompany(company)
+    setEditingCompanyId(company.id)
+    setEditForm({
+      name: company.name,
+      address: company.address,
+    })
+  }
+
+  const handleSave = async () => {
+    if (!user) {
+      return
+    }
+
+    // Busca a matriz e filiais selecionadas
+    const matriz = companies.find(c => c.type === 'headquarters')
+    
+    if (!matriz) {
+      toast.error('Erro', {
+        description: 'Matriz não encontrada. Não é possível salvar.',
+      })
+      return
+    }
+
+    // Filtra filiais selecionadas
+    const filiaisSelecionadas = companies.filter(
+      c => c.type === 'branch' && selectedBranchCNPJs.has(c.cnpj)
+    )
 
     setIsLoading(true)
     
     try {
-      if (mode === 'add' && receitaData) {
-        // Modo "add": salvar novo cliente com dados da Receita
-        const savedCompany = await upsertCompanyFromReceita(receitaData, user.id)
+      if (mode === 'add') {
+        // Modo "add": salvar matriz e filiais selecionadas
         
-        toast.success('Cliente salvo com sucesso!', {
-          description: `${savedCompany.name} foi adicionado à sua lista de clientes.`,
+        // Converte Company para CompanyData (remove metadados do Firestore)
+        const matrizData: CompanyData = {
+          cnpj: matriz.cnpj,
+          name: matriz.name,
+          legalName: matriz.legalName,
+          address: matriz.address,
+          type: matriz.type,
+          status: matriz.status,
+        }
+        
+        const filiaisData: CompanyData[] = filiaisSelecionadas.map(f => ({
+          cnpj: f.cnpj,
+          name: f.name,
+          legalName: f.legalName,
+          address: f.address,
+          type: f.type,
+          status: f.status,
+        }))
+        
+        // Salva matriz e filiais com relacionamento
+        const { matriz: savedMatriz, filiais: savedFiliais } = 
+          await saveMatrizAndBranches(matrizData, filiaisData, user.id)
+        
+        toast.success('Empresas salvas com sucesso!', {
+          description: `${savedMatriz.name} e ${savedFiliais.length} filial(is) foram adicionadas.`,
         })
-      } else {
-        // Modo "search/edit": atualizar cliente existente
-        // TODO: implementar updateCompany quando houver edição de dados
+        // Limpa estado após salvar (modo add)
+        setSelectedCompany(undefined)
+        setCompanies([])
+        setSelectedBranchCNPJs(new Set())
+        resetEditForm()
+      } else if (mode === 'search') {
+        if (!editingCompanyId) {
+          toast.error('Selecione um cliente', {
+            description: 'Clique em "Editar" no cliente que deseja atualizar.',
+          })
+          return
+        }
+
+        const trimmedName = editForm.name.trim()
+        const trimmedAddress = editForm.address.trim()
+
+        if (!trimmedName || !trimmedAddress) {
+          toast.error('Campos obrigatórios', {
+            description: 'Nome e endereço são obrigatórios.',
+          })
+          return
+        }
+
+        const updatedCompany = await updateCompany(editingCompanyId, {
+          name: trimmedName,
+          address: trimmedAddress,
+        })
+
+        setCompanies((prev) =>
+          prev.map((company) =>
+            company.id === updatedCompany.id ? updatedCompany : company,
+          ),
+        )
+        setSelectedCompany(updatedCompany)
+        resetEditForm()
+
         toast.success('Cliente atualizado com sucesso!', {
-          description: `${selectedCompany.name} foi atualizado.`,
+          description: `${updatedCompany.name} foi atualizado.`,
         })
       }
-      
-      // Limpar estado após salvar
-      setSelectedCompany(undefined)
-      setCompanies([])
-      setReceitaData(null)
     } catch (error) {
-      console.error('Erro ao salvar cliente:', error)
+      console.error('Erro ao salvar empresas:', error)
       const errorMessage =
-        error instanceof Error ? error.message : 'Erro ao salvar cliente'
+        error instanceof Error ? error.message : 'Erro ao salvar empresas'
       
       toast.error('Erro ao salvar', {
         description: errorMessage,
@@ -202,19 +370,24 @@ export function ClientsPage() {
     setMode('add')
     setCompanies([])
     setSelectedCompany(undefined)
-    setReceitaData(null)
+    setSelectedBranchCNPJs(new Set())
+    resetEditForm()
   }
 
   const handleSearchClient = () => {
     setMode('search')
     setCompanies([])
     setSelectedCompany(undefined)
-    setReceitaData(null)
+    setSelectedBranchCNPJs(new Set())
+    resetEditForm()
   }
 
   const pageTitle = mode === 'add' ? 'Adicionar Cliente' : 'Procurar Cliente'
   const tableMode = mode === 'search' ? 'edit' : mode
   const footerMode = mode === 'search' ? 'edit' : mode
+  const editingCompany = editingCompanyId
+    ? companies.find((company) => company.id === editingCompanyId)
+    : undefined
 
   return (
     <div className="min-h-screen">
@@ -264,12 +437,35 @@ export function ClientsPage() {
             companies={companies}
             selectedCompany={selectedCompany}
             onSelectCompany={handleSelectCompany}
+            selectedBranchCNPJs={mode === 'add' ? selectedBranchCNPJs : undefined}
+            onToggleBranch={mode === 'add' ? handleToggleBranch : undefined}
+            onSelectAllBranches={mode === 'add' ? handleSelectAllBranches : undefined}
+            onDeselectAllBranches={mode === 'add' ? handleDeselectAllBranches : undefined}
+            onEditCompany={mode === 'search' ? handleEditCompany : undefined}
             mode={tableMode}
           />
+
+          {mode === 'search' && editingCompany && (
+            <div ref={editFormRef}>
+              <CompanyEditForm
+                name={editForm.name}
+                address={editForm.address}
+                cnpj={editingCompany.cnpj}
+                type={editingCompany.type}
+                onChange={handleEditFormChange}
+              />
+            </div>
+          )}
         </div>
         <FooterBar
-          selectedCompany={selectedCompany}
+          company={
+            mode === 'add'
+              ? companies.find(c => c.type === 'headquarters')
+              : editingCompany
+          }
+          selectedBranchesCount={mode === 'add' ? selectedBranchCNPJs.size : undefined}
           mode={footerMode}
+          isLoading={isLoading}
           onSave={handleSave}
         />
       </main>

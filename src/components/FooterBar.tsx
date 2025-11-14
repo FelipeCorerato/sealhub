@@ -1,58 +1,95 @@
 import { Button } from '@/components/ui/button'
-import { Save } from 'lucide-react'
+import { Save, Loader2 } from 'lucide-react'
 import type { Company } from '@/types'
-import { toast } from 'sonner'
+import { formatCNPJ } from '@/lib/cnpj'
+import { useSidebar } from '@/contexts/SidebarContext'
+import { cn } from '@/lib/utils'
 
 interface FooterBarProps {
-  selectedCompany?: Company
+  company?: Company // Empresa selecionada (matriz no modo add ou cliente em edição)
+  selectedBranchesCount?: number // Quantidade de filiais selecionadas
   mode: 'add' | 'edit'
+  isLoading?: boolean // Estado de carregamento
   onSave: () => void
 }
 
-export function FooterBar({ selectedCompany, mode, onSave }: FooterBarProps) {
-  const handleSave = () => {
-    onSave()
-    if (mode === 'add') {
-      toast.success('Cliente salvo com sucesso!', {
-        description: `${selectedCompany?.name} foi adicionado à sua lista de clientes.`,
-      })
-    } else {
-      toast.success('Cliente atualizado com sucesso!', {
-        description: `${selectedCompany?.name} foi atualizado.`,
-      })
-    }
-  }
-
-  if (!selectedCompany) {
+export function FooterBar({ 
+  company, 
+  selectedBranchesCount, 
+  mode, 
+  isLoading = false,
+  onSave 
+}: FooterBarProps) {
+  const { isCollapsed } = useSidebar()
+  
+  if (!company) {
     return null
   }
 
-  const label = mode === 'add' ? 'Adicionando Cliente:' : 'Editando Cliente:'
+  const label = mode === 'add' ? 'Adicionar' : 'Editar'
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 lg:left-64" style={{ zIndex: 'var(--z-footer)' }}>
+    <div 
+      className={cn(
+        "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
+        isCollapsed ? "lg:left-20" : "lg:left-64"
+      )} 
+      style={{ zIndex: 'var(--z-footer)' }}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <div>
-          <p className="text-sm text-neutral-600">{label}</p>
-          <p className="text-lg font-semibold text-neutral-800">
-            {selectedCompany.name}
-          </p>
+        <div className="flex items-center gap-6">
+          <div>
+            <p className="text-sm text-neutral-600">{label}</p>
+            <p className="text-lg font-semibold text-neutral-800">
+              {company.name}
+            </p>
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-xs text-neutral-500">CNPJ</p>
+            <p className="text-sm font-mono font-medium text-neutral-700">
+              {formatCNPJ(company.cnpj)}
+            </p>
+          </div>
+          {mode === 'add' && selectedBranchesCount !== undefined && (
+            <div className="hidden md:block">
+              <p className="text-xs text-neutral-500">Filiais</p>
+              <p className="text-sm font-medium text-neutral-700">
+                {selectedBranchesCount === 0 
+                  ? 'Nenhuma selecionada' 
+                  : selectedBranchesCount === 1 
+                  ? '1 filial selecionada'
+                  : `${selectedBranchesCount} filiais selecionadas`}
+              </p>
+            </div>
+          )}
         </div>
         <Button
-          onClick={handleSave}
-          className="gap-2 text-white transition-all hover:scale-105"
+          onClick={onSave}
+          disabled={isLoading}
+          className="gap-2 text-white transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           style={{
-            backgroundColor: 'var(--color-primary)',
+            backgroundColor: isLoading ? 'var(--color-primary)' : 'var(--color-primary)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+            if (!isLoading) {
+              e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-primary)'
           }}
         >
-          <Save className="h-4 w-4" />
-          Salvar
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Salvando...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Salvar
+            </>
+          )}
         </Button>
       </div>
     </div>

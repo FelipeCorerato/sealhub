@@ -1,5 +1,5 @@
 import type { CompanyData } from '@/types'
-import { onlyNumbers } from './cnpj'
+import { onlyNumbers, isHeadquarters } from './cnpj'
 
 interface BrasilAPIResponse {
   cnpj: string
@@ -153,5 +153,120 @@ export function validateCNPJDigits(cnpj: string): boolean {
   }
 
   return true
+}
+
+/**
+ * Gera um CNPJ completo a partir do número base e número da filial
+ * Calcula os dígitos verificadores corretamente
+ */
+function generateCNPJ(base: string, branchNumber: number): string {
+  const branch = branchNumber.toString().padStart(4, '0')
+  const partial = base + branch
+  
+  // Calcula primeiro dígito verificador
+  let tamanho = 12
+  let numeros = partial.substring(0, tamanho)
+  let soma = 0
+  let pos = tamanho - 7
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--
+    if (pos < 2) pos = 9
+  }
+
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  const digito1 = resultado.toString()
+
+  // Calcula segundo dígito verificador
+  tamanho = 13
+  numeros = partial + digito1
+  soma = 0
+  pos = tamanho - 7
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--
+    if (pos < 2) pos = 9
+  }
+
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  const digito2 = resultado.toString()
+
+  return base + branch + digito1 + digito2
+}
+
+/**
+ * Busca matriz e TODAS as filiais relacionadas na API da Receita Federal
+ * Gera CNPJs sequencialmente (0001, 0002, 0003...) e busca cada um
+ * Para após encontrar 3 CNPJs não encontrados consecutivos
+ * 
+ * @param cnpj - CNPJ da matriz ou de qualquer filial
+ * @param maxBranches - Número máximo de filiais a tentar buscar (padrão: 50)
+ * @returns Array com dados das empresas: matriz sempre primeiro, depois filiais
+ */
+export async function fetchRelatedCNPJs(
+  cnpj: string,
+  maxBranches: number = 50
+): Promise<CompanyData[]> {
+  const results: CompanyData[] = []
+  const cleanCNPJ = onlyNumbers(cnpj)
+  const base = cleanCNPJ.substring(0, 8) // Raiz do CNPJ (8 primeiros dígitos)
+  
+  console.log(`🔍 Buscando matriz e filiais para raiz: ${base}`)
+  
+  // Busca primeiro a matriz (0001)
+  const matrizCNPJ = generateCNPJ(base, 1)
+  
+  try {
+    console.log(`📍 Buscando matriz: ${matrizCNPJ}`)
+    const matrizData = await fetchCNPJFromReceita(matrizCNPJ)
+    results.push(matrizData)
+    console.log(`✅ Matriz encontrada: ${matrizData.name}`)
+  } catch (error) {
+    console.warn('❌ Matriz não encontrada:', matrizCNPJ)
+    
+    // Se não encontrou a matriz e o CNPJ pesquisado não é matriz,
+    // busca pelo menos o CNPJ pesquisado
+    if (!isHeadquarters(cleanCNPJ)) {
+      try {
+        const filialData = await fetchCNPJFromReceita(cleanCNPJ)
+        results.push(filialData)
+        console.log(`✅ Filial pesquisada encontrada: ${filialData.name}`)
+      } catch (err) {
+        console.error('❌ CNPJ pesquisado também não encontrado')
+      }
+    }
+    return results
+  }
+  
+  // Busca sequencialmente as filiais (0002, 0003, 0004...)
+  let consecutiveNotFound = 0
+  const maxConsecutiveNotFound = 3 // Para após 3 CNPJs não encontrados consecutivos
+  
+  for (let branchNum = 2; branchNum <= maxBranches; branchNum++) {
+    const filialCNPJ = generateCNPJ(base, branchNum)
+    
+    try {
+      console.log(`📍 Buscando filial ${branchNum}: ${filialCNPJ}`)
+      const filialData = await fetchCNPJFromReceita(filialCNPJ)
+      results.push(filialData)
+      consecutiveNotFound = 0 // Resetar contador
+      console.log(`✅ Filial ${branchNum} encontrada: ${filialData.name}`)
+    } catch (error) {
+      consecutiveNotFound++
+      console.log(`❌ Filial ${branchNum} não encontrada (${consecutiveNotFound}/${maxConsecutiveNotFound})`)
+      
+      // Se encontrou 3 CNPJs não encontrados consecutivos, provavelmente acabaram
+      if (consecutiveNotFound >= maxConsecutiveNotFound) {
+        console.log(`⏹️ Parou de buscar: ${maxConsecutiveNotFound} não encontrados consecutivos`)
+        break
+      }
+    }
+    
+    // Pequeno delay para não sobrecarregar a API (rate limit)
+    await new Promise(resolve => setTimeout(resolve, 150))
+  }
+  
+  console.log(`✅ Total de empresas encontradas: ${results.length}`)
+  return results
 }
 

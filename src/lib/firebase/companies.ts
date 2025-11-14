@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import type { Company, CompanyData, CreateCompanyData, UpdateCompanyData } from '@/types'
+import { getCNPJBase, onlyNumbers } from '@/lib/cnpj'
 
 const COLLECTION_NAME = 'companies'
 
@@ -56,6 +57,62 @@ function docToCompany(id: string, data: DocumentData): Company {
   }
 }
 
+/**
+ * Prepara dados da empresa para salvar no Firestore, incluindo campos de relacionamento
+ */
+function prepareCompanyData(
+  companyData: CompanyData | Company,
+  userId: string,
+  headquartersId?: string
+): any {
+  const cnpjBase = getCNPJBase(companyData.cnpj)
+  
+  const baseData: any = {
+    cnpj: companyData.cnpj,
+    name: companyData.name,
+    address: companyData.address,
+    type: companyData.type,
+    status: companyData.status,
+    // Campos de relacionamento
+    cnpjBase, // Base do CNPJ (8 primeiros dígitos) - identifica matriz e filiais relacionadas
+    createdBy: userId,
+  }
+  
+  // Adiciona campos opcionais que podem existir em Company
+  if ('legalName' in companyData && companyData.legalName) {
+    baseData.legalName = companyData.legalName
+  }
+  if ('phone' in companyData && companyData.phone) {
+    baseData.phone = companyData.phone
+  }
+  if ('email' in companyData && companyData.email) {
+    baseData.email = companyData.email
+  }
+  if ('contactPerson' in companyData && companyData.contactPerson) {
+    baseData.contactPerson = companyData.contactPerson
+  }
+  if ('notes' in companyData && companyData.notes) {
+    baseData.notes = companyData.notes
+  }
+  if ('lastSyncedAt' in companyData && companyData.lastSyncedAt) {
+    baseData.lastSyncedAt = companyData.lastSyncedAt instanceof Date
+      ? Timestamp.fromDate(companyData.lastSyncedAt)
+      : companyData.lastSyncedAt
+  }
+  
+  // Se for filial e tiver ID da matriz, adiciona referência
+  if (companyData.type === 'branch' && headquartersId) {
+    baseData.headquartersId = headquartersId
+  }
+  
+  // Se for matriz, marca como matriz
+  if (companyData.type === 'headquarters') {
+    baseData.isHeadquarters = true
+  }
+  
+  return baseData
+}
+
 // ===== CRUD OPERATIONS =====
 
 /**
@@ -63,14 +120,18 @@ function docToCompany(id: string, data: DocumentData): Company {
  */
 export async function createCompany(
   companyData: CreateCompanyData,
+  headquartersId?: string,
 ): Promise<Company> {
   const companiesRef = collection(db, COLLECTION_NAME)
 
-  const docData = {
-    ...companyData,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  }
+  const docData = prepareCompanyData(
+    companyData,
+    companyData.createdBy,
+    headquartersId
+  )
+
+  docData.createdAt = Timestamp.now()
+  docData.updatedAt = Timestamp.now()
 
   const docRef = await addDoc(companiesRef, docData)
   const newDoc = await getDoc(docRef)
@@ -236,23 +297,114 @@ export async function cnpjExists(cnpj: string): Promise<boolean> {
 export async function upsertCompanyFromReceita(
   receitaData: CompanyData,
   userId: string,
+  headquartersId?: string,
 ): Promise<Company> {
   // Verifica se já existe
   const existing = await getCompanyByCNPJ(receitaData.cnpj)
 
   if (existing) {
     // Atualiza com os novos dados da Receita
-    return updateCompany(existing.id, {
+    const updateData: any = {
       ...receitaData,
       lastSyncedAt: new Date(),
-    })
+    }
+    
+    // Atualiza campos de relacionamento se necessário
+    const cnpjBase = getCNPJBase(receitaData.cnpj)
+    updateData.cnpjBase = cnpjBase
+    
+    if (receitaData.type === 'branch' && headquartersId) {
+      updateData.headquartersId = headquartersId
+    }
+    
+    return updateCompany(existing.id, updateData)
   } else {
     // Cria novo
-    return createCompany({
+    const companyData = {
       ...receitaData,
       createdBy: userId,
       lastSyncedAt: new Date(),
-    })
+    }
+    return createCompany(companyData, headquartersId)
   }
+}
+
+/**
+ * Salva matriz e filiais relacionadas no Firestore
+ * Estabelece relacionamento entre matriz e filiais
+ * 
+ * @param matrizData - Dados da matriz
+ * @param filiaisData - Array com dados das filiais a serem salvas
+ * @param userId - ID do usuário que está salvando
+ * @returns Array com matriz e filiais salvas
+ */
+export async function saveMatrizAndBranches(
+  matrizData: CompanyData,
+  filiaisData: CompanyData[],
+  userId: string,
+): Promise<{ matriz: Company; filiais: Company[] }> {
+  // 1. Salva a matriz primeiro
+  const matriz = await upsertCompanyFromReceita(matrizData, userId)
+  
+  // 2. Salva todas as filiais, referenciando a matriz
+  const filiais: Company[] = []
+  
+  for (const filialData of filiaisData) {
+    try {
+      const filial = await upsertCompanyFromReceita(
+        filialData,
+        userId,
+        matriz.id // ID da matriz como referência
+      )
+      filiais.push(filial)
+    } catch (error) {
+      console.error(`Erro ao salvar filial ${filialData.cnpj}:`, error)
+      // Continua salvando outras filiais mesmo se uma falhar
+    }
+  }
+  
+  return { matriz, filiais }
+}
+
+/**
+ * Busca matriz e todas as filiais relacionadas a um CNPJ
+ * Se o CNPJ fornecido for de uma filial, busca a matriz e todas as outras filiais
+ * Se o CNPJ fornecido for de uma matriz, busca a matriz e todas as filiais
+ * 
+ * @param cnpj - CNPJ da matriz ou de qualquer filial
+ * @returns Array com empresas ordenadas: matriz primeiro, depois filiais
+ */
+export async function searchRelatedCompanies(cnpj: string): Promise<Company[]> {
+  // Extrai o número base (8 primeiros dígitos)
+  const base = getCNPJBase(cnpj)
+  
+  // Busca todas as empresas
+  const q = query(
+    collection(db, COLLECTION_NAME),
+    orderBy('cnpj'),
+  )
+
+  const querySnapshot = await getDocs(q)
+  const companies: Company[] = []
+
+  querySnapshot.forEach((doc) => {
+    const company = docToCompany(doc.id, doc.data())
+    const companyCnpj = onlyNumbers(company.cnpj)
+    const companyBase = getCNPJBase(companyCnpj)
+    
+    // Se o número base for o mesmo, é uma empresa relacionada
+    if (companyBase === base) {
+      companies.push(company)
+    }
+  })
+
+  // Ordena: matriz primeiro (0001), depois filiais em ordem numérica
+  companies.sort((a, b) => {
+    const cnpjA = onlyNumbers(a.cnpj)
+    const cnpjB = onlyNumbers(b.cnpj)
+    return cnpjA.localeCompare(cnpjB)
+  })
+
+  return companies
 }
 
