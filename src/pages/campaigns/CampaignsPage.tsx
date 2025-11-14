@@ -22,10 +22,13 @@ import {
   type CampaignWithCompanies,
 } from '@/lib/firebase/campaigns'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSidebar } from '@/contexts/SidebarContext'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 export function CampaignsPage() {
   const { user } = useAuth()
+  const { isCollapsed } = useSidebar()
   const [mode, setMode] = useState<'add' | 'search'>('add')
   
   // Estados para criação de campanha
@@ -319,7 +322,10 @@ export function CampaignsPage() {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <main className="lg:pl-64">
+      <main className={cn(
+        "transition-all duration-300",
+        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+      )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
           <TopBar
             title="Painel de Campanhas"
@@ -409,7 +415,10 @@ export function CampaignsPage() {
 
         {/* Footer - Gerar Selos (somente no modo adicionar) */}
         {mode === 'add' && selectedCount > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 lg:left-64">
+          <div className={cn(
+            "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
+            isCollapsed ? "lg:left-20" : "lg:left-64"
+          )}>
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-600">

@@ -14,12 +14,15 @@ import {
   cnpjExists,
 } from '@/lib/firebase/companies'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSidebar } from '@/contexts/SidebarContext'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 type PageMode = 'add' | 'search'
 
 export function ClientsPage() {
   const { user } = useAuth()
+  const { isCollapsed } = useSidebar()
   const [mode, setMode] = useState<PageMode>('add')
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company>()
@@ -216,7 +219,10 @@ export function ClientsPage() {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <main className="lg:pl-64">
+      <main className={cn(
+        "transition-all duration-300",
+        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+      )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
           <TopBar
             title="Painel de Clientes"
