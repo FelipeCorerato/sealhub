@@ -30,7 +30,7 @@ export function FooterBar({ selectedCompany, mode, onSave }: FooterBarProps) {
   const label = mode === 'add' ? 'Adicionando Cliente:' : 'Editando Cliente:'
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 lg:left-64">
+    <div className="fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 lg:left-64" style={{ zIndex: 'var(--z-footer)' }}>
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div>
           <p className="text-sm text-neutral-600">{label}</p>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccessibility } from '../contexts/AccessibilityContext'
 import {
   Moon,
@@ -14,6 +14,7 @@ import {
 
 export function AccessibilityMenu() {
   const [isOpen, setIsOpen] = useState(false)
+  const [hasFooter, setHasFooter] = useState(false)
   const {
     isDarkMode,
     isHighContrast,
@@ -25,6 +26,35 @@ export function AccessibilityMenu() {
     resetAccessibility,
   } = useAccessibility()
 
+  // Detecta se há um footer visível na página
+  useEffect(() => {
+    const checkFooter = () => {
+      const footer = document.querySelector('footer, [class*="FooterBar"], .fixed.bottom-0')
+      const hasVisibleFooter = footer && window.getComputedStyle(footer).display !== 'none'
+      setHasFooter(!!hasVisibleFooter)
+    }
+
+    // Verifica inicialmente
+    checkFooter()
+
+    // Observa mudanças no DOM
+    const observer = new MutationObserver(checkFooter)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    })
+
+    // Verifica também ao redimensionar
+    window.addEventListener('resize', checkFooter)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', checkFooter)
+    }
+  }, [])
+
   const toggleMenu = () => {
     setIsOpen(prev => !prev)
   }
@@ -33,12 +63,22 @@ export function AccessibilityMenu() {
     resetAccessibility()
   }
 
+  // Calcula a posição do botão baseado na presença do footer
+  const buttonStyle = {
+    bottom: hasFooter ? '7rem' : '2rem',
+  }
+
+  const menuStyle = {
+    bottom: hasFooter ? '11rem' : '6rem',
+  }
+
   return (
     <>
       {/* Floating Button */}
       <button
         onClick={toggleMenu}
         className="accessibility-floating-button"
+        style={buttonStyle}
         aria-label="Menu de Acessibilidade"
         title="Menu de Acessibilidade"
       >
@@ -56,7 +96,7 @@ export function AccessibilityMenu() {
           />
 
           {/* Menu */}
-          <div className="accessibility-menu">
+          <div className="accessibility-menu" style={menuStyle}>
             {/* Header */}
             <div className="accessibility-menu-header">
               <div className="accessibility-menu-title">

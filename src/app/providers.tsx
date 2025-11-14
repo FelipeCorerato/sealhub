@@ -15,7 +15,7 @@ export function Providers({ children }: ProvidersProps) {
         <ThemeProvider>
           <AuthProvider>
             {children}
-            <Toaster />
+            <Toaster position="top-right" style={{ zIndex: 'var(--z-toast)' }} />
           </AuthProvider>
         </ThemeProvider>
       </AccessibilityProvider>
