@@ -440,18 +440,12 @@ export function CampaignsPage() {
 
               {/* Resultados da Busca */}
               {searchResults.length > 0 && (
-                <div className="space-y-4">
-                  <p className="text-sm italic text-neutral-600">
-                    {searchResults.length} Resultado(s) encontrado(s) para "
-                    {searchResults[0]?.name || 'busca'}"
-                  </p>
-                  <CampaignResultsTable
-                    campaigns={searchResults}
-                    onViewDetails={handleViewDetails}
-                    onAddMore={handleAddMore}
-                    onGenerateLabels={handleGenerateLabels}
-                  />
-                </div>
+                <CampaignResultsTable
+                  campaigns={searchResults}
+                  onViewDetails={handleViewDetails}
+                  onAddMore={handleAddMore}
+                  onGenerateLabels={handleGenerateLabels}
+                />
               )}
 
               {!isSearching && searchResults.length === 0 && (
