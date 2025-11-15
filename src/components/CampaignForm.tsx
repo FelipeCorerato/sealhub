@@ -83,7 +83,6 @@ export function CampaignForm({
             Remetente *
           </label>
           <Textarea
-            placeholder="M7 Comercial Importadora e Exportadora LTDA&#10;Rua Machado de Assis - 581 B&#10;Vila Lutfalla - São Carlos, SP&#10;CEP: 13.570-673"
             value={sender}
             onChange={(e) => onSenderChange(e.target.value)}
             rows={4}
@@ -125,7 +124,7 @@ export function CampaignForm({
                   onCheckedChange={(checked) =>
                     onInstructionChange(item.key, checked === true)
                   }
-                  className="data-[state=checked]:bg-[var(--color-primary)] data-[state=checked]:border-[var(--color-primary)]"
+                  className="data-[state=checked]:bg-(--color-primary) data-[state=checked]:border-(--color-primary)"
                 />
                 <label
                   htmlFor={item.key}

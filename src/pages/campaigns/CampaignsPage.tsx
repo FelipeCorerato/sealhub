@@ -34,13 +34,13 @@ export function CampaignsPage() {
   
   // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
-  const [sender, setSender] = useState('')
+  const [sender, setSender] = useState('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
   const [observation, setObservation] = useState('')
   const [instructions, setInstructions] = useState<CampaignInstructions>({
-    fragile: false,
-    attention: false,
-    handleWithCare: false,
-    thisWayUp: false,
+    fragile: true,
+    attention: true,
+    handleWithCare: true,
+    thisWayUp: true,
   })
 
   const [companies, setCompanies] = useState<Company[]>([])
@@ -212,13 +212,13 @@ export function CampaignsPage() {
 
       // Limpa o formulário
       setCampaignName('')
-      setSender('')
+      setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
       setObservation('')
       setInstructions({
-        fragile: false,
-        attention: false,
-        handleWithCare: false,
-        thisWayUp: false,
+        fragile: true,
+        attention: true,
+        handleWithCare: true,
+        thisWayUp: true,
       })
       setSelectedIds(new Set())
       setCompanies([])
@@ -239,13 +239,13 @@ export function CampaignsPage() {
     setMode('add')
     // Reset form
     setCampaignName('')
-    setSender('')
+    setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
     setObservation('')
     setInstructions({
-      fragile: false,
-      attention: false,
-      handleWithCare: false,
-      thisWayUp: false,
+      fragile: true,
+      attention: true,
+      handleWithCare: true,
+      thisWayUp: true,
     })
     setSelectedIds(new Set())
     setCompanies([])
