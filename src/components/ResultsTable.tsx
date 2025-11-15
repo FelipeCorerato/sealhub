@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { MoreVertical, Edit, Copy, Building2, MapPin, CheckSquare2, Square } from 'lucide-react'
-import { formatCNPJ } from '@/lib/cnpj'
+import { formatCNPJ, getCNPJBase, onlyNumbers } from '@/lib/cnpj'
 import { cn } from '@/lib/utils'
 
 interface ResultsTableProps {
@@ -34,6 +34,251 @@ const statusColors: Record<Status, string> = {
     'bg-[var(--color-status-suspensa-bg)] text-[var(--color-status-suspensa)] border-[var(--color-status-suspensa)]',
 }
 
+// Agrupa empresas por CNPJ base (matriz + suas filiais)
+function groupCompaniesByBase(companies: Company[]): Map<string, { matriz?: Company; filiais: Company[] }> {
+  const groups = new Map<string, { matriz?: Company; filiais: Company[] }>()
+  
+  companies.forEach((company) => {
+    const base = getCNPJBase(onlyNumbers(company.cnpj))
+    
+    if (!groups.has(base)) {
+      groups.set(base, { filiais: [] })
+    }
+    
+    const group = groups.get(base)!
+    
+    if (company.type === 'headquarters') {
+      group.matriz = company
+    } else {
+      group.filiais.push(company)
+    }
+  })
+  
+  return groups
+}
+
+// Componente para renderizar um grupo de matriz + filiais
+interface CompanyGroupProps {
+  matriz?: Company
+  filiais: Company[]
+  selectedCompany?: Company
+  onSelectCompany: (company: Company) => void
+  onEditCompany?: (company: Company) => void
+  mode: 'add' | 'edit'
+}
+
+function CompanyGroup({
+  matriz,
+  filiais,
+  selectedCompany,
+  onSelectCompany,
+  onEditCompany,
+  mode,
+}: CompanyGroupProps) {
+  return (
+    <div className="space-y-6">
+      {/* Card da Matriz - Evidenciado */}
+      {matriz && (
+        <div
+          onClick={() => {
+            if (mode === 'edit' && onEditCompany) {
+              onEditCompany(matriz)
+            } else {
+              onSelectCompany(matriz)
+            }
+          }}
+          className={cn(
+            'group relative rounded-2xl border-2 border-[var(--color-primary)] bg-gradient-to-br from-[var(--color-primary)]/5 to-white p-6 shadow-lg transition-all hover:shadow-xl cursor-pointer',
+            selectedCompany?.cnpj === matriz.cnpj && 'ring-4 ring-[var(--color-primary)]/20',
+          )}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white shadow-md">
+                  <Building2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <Badge className="bg-[var(--color-primary)] text-white border-0">
+                    {companyTypeLabels[matriz.type]}
+                  </Badge>
+                </div>
+              </div>
+
+              <h3 className="mb-2 text-2xl font-bold text-neutral-900">
+                {matriz.name}
+              </h3>
+
+              <div className="mb-4 space-y-2 text-sm text-neutral-600">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-semibold text-neutral-800">
+                    {formatCNPJ(matriz.cnpj)}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400" />
+                  <span>{matriz.address}</span>
+                </div>
+              </div>
+
+              {mode === 'add' && (
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className={cn('font-medium', statusColors[matriz.status])}
+                  >
+                    {statusLabels[matriz.status]}
+                  </Badge>
+                </div>
+              )}
+            </div>
+
+            {mode === 'add' && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        console.log('Editar', matriz)
+                      }}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigator.clipboard.writeText(matriz.cnpj)
+                      }}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copiar CNPJ
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lista de Filiais */}
+      {filiais.length > 0 && (
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h4 className="text-lg font-semibold text-neutral-800">
+              Filiais ({filiais.length})
+            </h4>
+          </div>
+
+          <div className="space-y-3">
+            {filiais.map((filial, index) => (
+              <div
+                key={`${filial.cnpj}-${index}`}
+                onClick={() => {
+                  if (mode === 'edit' && onEditCompany) {
+                    onEditCompany(filial)
+                  } else {
+                    onSelectCompany(filial)
+                  }
+                }}
+                className={cn(
+                  'group relative flex items-start gap-4 rounded-xl border border-neutral-200 p-4 transition-all cursor-pointer hover:border-[var(--color-primary)]/30 hover:bg-neutral-50',
+                )}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="mb-2 flex items-center gap-3">
+                    <div className="flex h-2 w-2 rounded-full bg-neutral-400 flex-shrink-0" />
+                    <h5 className="font-semibold text-neutral-900">
+                      {filial.name}
+                    </h5>
+                  </div>
+
+                  <div className="ml-5 space-y-1 text-sm text-neutral-600">
+                    <div className="font-mono text-xs text-neutral-500">
+                      {formatCNPJ(filial.cnpj)}
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400" />
+                      <span className="text-xs">{filial.address}</span>
+                    </div>
+                  </div>
+
+                  {mode === 'add' && (
+                    <div className="ml-5 mt-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs font-medium',
+                          statusColors[filial.status],
+                        )}
+                      >
+                        {statusLabels[filial.status]}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Menu de ações da filial */}
+                {mode === 'add' && (
+                  <div 
+                    className="flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            console.log('Editar', filial)
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigator.clipboard.writeText(filial.cnpj)
+                          }}
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copiar CNPJ
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ResultsTable({
   companies,
   selectedCompany,
@@ -49,15 +294,47 @@ export function ResultsTable({
     return null
   }
 
-  // Separa matriz e filiais
-  const matriz = companies.find(c => c.type === 'headquarters')
-  const filiais = companies.filter(c => c.type === 'branch')
+  // Agrupa empresas por CNPJ base
+  const groups = groupCompaniesByBase(companies)
   
   // Se não há callback para alternar, todas filiais estão selecionadas por padrão
+  const isSingleGroup = groups.size === 1
+  
   const isBranchSelected = (cnpj: string) => {
     if (!selectedBranchCNPJs) return true // Padrão: todas selecionadas
     return selectedBranchCNPJs.has(cnpj)
   }
+  
+  // Se houver múltiplos grupos (listagem de todos os clientes), renderiza cada grupo separadamente
+  if (!isSingleGroup) {
+    const groupsArray = Array.from(groups.entries()).sort((a, b) => {
+      // Ordena por nome da matriz
+      const nomeA = a[1].matriz?.name || a[1].filiais[0]?.name || ''
+      const nomeB = b[1].matriz?.name || b[1].filiais[0]?.name || ''
+      return nomeA.localeCompare(nomeB)
+    })
+    
+    return (
+      <div className="space-y-8">
+        {groupsArray.map(([base, group]) => (
+          <CompanyGroup
+            key={base}
+            matriz={group.matriz}
+            filiais={group.filiais}
+            selectedCompany={selectedCompany}
+            onSelectCompany={onSelectCompany}
+            onEditCompany={onEditCompany}
+            mode={mode}
+          />
+        ))}
+      </div>
+    )
+  }
+  
+  // Para busca específica (um único grupo), renderiza com checkbox de seleção de filiais
+  const [group] = Array.from(groups.values())
+  const matriz = group.matriz
+  const filiais = group.filiais
 
   return (
     <div className="space-y-6">
@@ -154,11 +431,10 @@ export function ResultsTable({
               </div>
             )}
           </div>
-
         </div>
       )}
 
-      {/* Lista de Filiais */}
+      {/* Lista de Filiais com seleção */}
       {filiais.length > 0 && (
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
@@ -214,7 +490,7 @@ export function ResultsTable({
                   {mode === 'add' && onToggleBranch && (
                     <div 
                       className="mt-0.5 flex-shrink-0"
-                      onClick={(e) => e.stopPropagation()} // Evita duplicar o toggle quando clica no checkbox
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
                         checked={isBranchChecked}
@@ -309,7 +585,6 @@ export function ResultsTable({
                       </DropdownMenu>
                     </div>
                   )}
-
                 </div>
               )
             })}
