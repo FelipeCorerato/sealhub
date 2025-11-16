@@ -33,10 +33,12 @@
 - [**COMO_USAR_SELOS.md**](./COMO_USAR_SELOS.md) - Guia de uso dos selos
 - [**GUIA_DE_USO.md**](./GUIA_DE_USO.md) - Guia geral do sistema
 
-## 🎨 Interface
+## 🎨 Interface e UX
 
 - [**Z_INDEX_HIERARCHY.md**](./Z_INDEX_HIERARCHY.md) - Hierarquia de z-index
 - [**TESTING_OVERLAYS.md**](./TESTING_OVERLAYS.md) - Testes de overlays
+- [**MELHORIAS_ACESSIBILIDADE.md**](./MELHORIAS_ACESSIBILIDADE.md) - ⭐ Melhorias do modal de acessibilidade
+- [**OTIMIZACAO_MOBILE.md**](./OTIMIZACAO_MOBILE.md) - ⭐ Otimizações para dispositivos móveis
 
 ---
 

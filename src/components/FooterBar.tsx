@@ -31,16 +31,16 @@ export function FooterBar({
   return (
     <div 
       className={cn(
-        "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
+        "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-3 shadow-lg duration-300 transition-all sm:p-4",
         isCollapsed ? "lg:left-20" : "lg:left-64"
       )} 
       style={{ zIndex: 'var(--z-footer)' }}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div>
-            <p className="text-sm text-neutral-600">{label}</p>
-            <p className="text-lg font-semibold text-neutral-800">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="flex items-center gap-3 overflow-hidden sm:gap-6">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-neutral-600 sm:text-sm">{label}</p>
+            <p className="truncate text-base font-semibold text-neutral-800 sm:text-lg">
               {company.name}
             </p>
           </div>
@@ -66,7 +66,9 @@ export function FooterBar({
         <Button
           onClick={onSave}
           disabled={isLoading}
-          className="gap-2 text-white transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="shrink-0 gap-2 text-white transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          title={isLoading ? "Salvando..." : "Salvar"}
+          aria-label={isLoading ? "Salvando..." : "Salvar"}
           style={{
             backgroundColor: isLoading ? 'var(--color-primary)' : 'var(--color-primary)',
           }}
@@ -82,12 +84,12 @@ export function FooterBar({
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Salvando...
+              <span className="hidden sm:inline">Salvando...</span>
             </>
           ) : (
             <>
               <Save className="h-4 w-4" />
-              Salvar
+              <span className="hidden sm:inline">Salvar</span>
             </>
           )}
         </Button>

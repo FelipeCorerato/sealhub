@@ -24,13 +24,15 @@ export function TopBar({
   const isAddMode = mode === 'add' || mode === 'add-to-existing'
 
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm">
-      <h2 className="text-xl font-semibold text-neutral-800">{title}</h2>
-      <div className="flex gap-3">
+    <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
+      <h2 className="text-lg font-semibold text-neutral-800 sm:text-xl">{title}</h2>
+      <div className="flex gap-2 sm:gap-3">
         <Button
           variant={mode === 'search' ? 'default' : 'outline'}
           onClick={onBuscarCliente}
           className="gap-2"
+          title={searchLabel}
+          aria-label={searchLabel}
           style={
             mode === 'search'
               ? {
@@ -52,12 +54,14 @@ export function TopBar({
           }}
         >
           <Search className="h-4 w-4" />
-          {searchLabel}
+          <span className="hidden sm:inline">{searchLabel}</span>
         </Button>
         <Button
           variant={isAddMode ? 'default' : 'outline'}
           onClick={onNovoCliente}
           className="gap-2"
+          title={newLabel}
+          aria-label={newLabel}
           style={
             isAddMode
               ? {
@@ -79,7 +83,7 @@ export function TopBar({
           }}
         >
           <Plus className="h-4 w-4" />
-          {newLabel}
+          <span className="hidden sm:inline">{newLabel}</span>
         </Button>
       </div>
     </div>
