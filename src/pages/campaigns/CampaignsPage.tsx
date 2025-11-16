@@ -7,7 +7,7 @@ import { ClientSelectionTable } from '@/components/ClientSelectionTable'
 import { CampaignSearchBar } from '@/components/CampaignSearchBar'
 import { CampaignResultsTable } from '@/components/CampaignResultsTable'
 import { Button } from '@/components/ui/button'
-import { FileText } from 'lucide-react'
+import { FileText, Plus } from 'lucide-react'
 import type { Company, CampaignInstructions } from '@/types'
 import {
   searchCompaniesByName,
@@ -19,6 +19,7 @@ import {
   searchCampaignsWithCompaniesByName,
   searchCampaignsByCompanyName,
   getAllCampaignsWithCompanies,
+  addCompaniesToCampaign,
   type CampaignWithCompanies,
 } from '@/lib/firebase/campaigns'
 import { getUserProfiles, type UserProfile } from '@/lib/firebase/users'
@@ -31,7 +32,7 @@ import { printSeals } from '@/lib/seal-generator'
 export function CampaignsPage() {
   const { user } = useAuth()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<'add' | 'search'>('add')
+  const [mode, setMode] = useState<'add' | 'search' | 'add-to-existing'>('add')
   
   // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
@@ -43,6 +44,9 @@ export function CampaignsPage() {
     handleWithCare: true,
     thisWayUp: true,
   })
+
+  // Estado para campanha sendo editada (ao adicionar mais clientes)
+  const [editingCampaign, setEditingCampaign] = useState<CampaignWithCompanies | null>(null)
 
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -205,36 +209,73 @@ export function CampaignsPage() {
         return
       }
 
-      // Cria a campanha no Firestore
-      const campaign = await createCampaign({
-        name: campaignName,
-        sender,
-        observation,
-        instructions,
-        companyIds: Array.from(selectedIds),
-        status: 'active',
-        createdBy: user.id,
-      })
+      // Verifica se está adicionando a uma campanha existente ou criando uma nova
+      if (mode === 'add-to-existing' && editingCampaign) {
+        // Adiciona clientes a uma campanha existente
+        const updatedCampaign = await addCompaniesToCampaign(
+          editingCampaign.id,
+          Array.from(selectedIds),
+          user.id
+        )
 
-      toast.success('Campanha criada com sucesso!', {
-        description: `"${campaign.name}" foi criada com ${selectedIds.size} cliente(s).`,
-      })
+        toast.success('Clientes adicionados com sucesso!', {
+          description: `${selectedIds.size} novo(s) cliente(s) adicionado(s) à campanha "${updatedCampaign.name}".`,
+        })
 
-      // Gera os selos em PDF e abre a janela de impressão
-      toast.info('Gerando selos...', {
-        description: 'A janela de impressão será aberta em instantes.',
-      })
+        // Gera os selos apenas dos novos clientes adicionados
+        toast.info('Gerando selos dos novos clientes...', {
+          description: 'A janela de impressão será aberta em instantes.',
+        })
 
-      // Pequeno delay para permitir que o toast apareça
-      setTimeout(() => {
-        printSeals({
-          campaignName,
+        // Pequeno delay para permitir que o toast apareça
+        setTimeout(() => {
+          printSeals({
+            campaignName,
+            sender,
+            observation,
+            instructions,
+            companies: selectedCompanies,
+          })
+        }, 500)
+
+        // Volta para o modo de busca
+        setMode('search')
+        setEditingCampaign(null)
+        
+        // Atualiza os resultados da busca para refletir as mudanças
+        handleListAllCampaigns()
+      } else {
+        // Cria uma nova campanha
+        const campaign = await createCampaign({
+          name: campaignName,
           sender,
           observation,
           instructions,
-          companies: selectedCompanies,
+          companyIds: Array.from(selectedIds),
+          status: 'active',
+          createdBy: user.id,
         })
-      }, 500)
+
+        toast.success('Campanha criada com sucesso!', {
+          description: `"${campaign.name}" foi criada com ${selectedIds.size} cliente(s).`,
+        })
+
+        // Gera os selos em PDF e abre a janela de impressão
+        toast.info('Gerando selos...', {
+          description: 'A janela de impressão será aberta em instantes.',
+        })
+
+        // Pequeno delay para permitir que o toast apareça
+        setTimeout(() => {
+          printSeals({
+            campaignName,
+            sender,
+            observation,
+            instructions,
+            companies: selectedCompanies,
+          })
+        }, 500)
+      }
 
       // Limpa o formulário
       setCampaignName('')
@@ -249,11 +290,11 @@ export function CampaignsPage() {
       setSelectedIds(new Set())
       setCompanies([])
     } catch (error) {
-      console.error('Erro ao criar campanha:', error)
+      console.error('Erro ao processar campanha:', error)
       const errorMessage =
-        error instanceof Error ? error.message : 'Erro ao criar campanha'
+        error instanceof Error ? error.message : 'Erro ao processar campanha'
       
-      toast.error('Erro ao criar campanha', {
+      toast.error(mode === 'add-to-existing' ? 'Erro ao adicionar clientes' : 'Erro ao criar campanha', {
         description: errorMessage,
       })
     } finally {
@@ -263,6 +304,7 @@ export function CampaignsPage() {
 
   const handleNewCampaign = () => {
     setMode('add')
+    setEditingCampaign(null)
     // Reset form
     setCampaignName('')
     setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
@@ -362,8 +404,23 @@ export function CampaignsPage() {
   }
 
   const handleAddMore = (campaign: CampaignWithCompanies) => {
-    console.log('Adicionar mais clientes:', campaign)
-    toast.info('Adicionar mais clientes em desenvolvimento')
+    // Muda para o modo de adicionar clientes a uma campanha existente
+    setMode('add-to-existing')
+    setEditingCampaign(campaign)
+    
+    // Carrega os dados da campanha no formulário
+    setCampaignName(campaign.name)
+    setSender(campaign.sender)
+    setObservation(campaign.observation)
+    setInstructions(campaign.instructions)
+    
+    // Limpa a seleção de clientes
+    setSelectedIds(new Set())
+    setCompanies([])
+    
+    toast.info(`Adicionando clientes à campanha "${campaign.name}"`, {
+      description: 'Selecione os novos clientes que deseja adicionar.',
+    })
   }
 
   const handleGenerateLabels = async (campaign: CampaignWithCompanies) => {
@@ -413,26 +470,91 @@ export function CampaignsPage() {
             onBuscarCliente={handleSearchCampaign}
           />
 
-          {mode === 'add' ? (
+          {mode === 'add' || mode === 'add-to-existing' ? (
             <>
+              {/* Banner informativo quando está adicionando a uma campanha existente */}
+              {mode === 'add-to-existing' && editingCampaign && (
+                <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500">
+                      <Plus className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900">
+                        Adicionando clientes à campanha existente
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) já vinculado(s))
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setMode('search')
+                        setEditingCampaign(null)
+                        setCampaignName('')
+                        setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
+                        setObservation('')
+                        setInstructions({
+                          fragile: true,
+                          attention: true,
+                          handleWithCare: true,
+                          thisWayUp: true,
+                        })
+                        setSelectedIds(new Set())
+                        setCompanies([])
+                      }}
+                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Formulário da Campanha */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <CampaignForm
-                  name={campaignName}
-                  sender={sender}
-                  observation={observation}
-                  instructions={instructions}
-                  onNameChange={setCampaignName}
-                  onSenderChange={setSender}
-                  onObservationChange={setObservation}
-                  onInstructionChange={handleInstructionChange}
-                />
+                {mode === 'add-to-existing' ? (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-neutral-800">
+                      Informações da Campanha (Somente Leitura)
+                    </h3>
+                    <div className="grid gap-4 rounded-lg bg-neutral-50 p-4">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-600">Nome da Campanha</label>
+                        <p className="mt-1 text-base text-neutral-800">{campaignName}</p>
+                      </div>
+                      <div className="grid gap-4 lg:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-600">Remetente</label>
+                          <p className="mt-1 whitespace-pre-line text-sm text-neutral-800">{sender}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-600">Observação</label>
+                          <p className="mt-1 text-base text-neutral-800">{observation}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <CampaignForm
+                    name={campaignName}
+                    sender={sender}
+                    observation={observation}
+                    instructions={instructions}
+                    onNameChange={setCampaignName}
+                    onSenderChange={setSender}
+                    onObservationChange={setObservation}
+                    onInstructionChange={handleInstructionChange}
+                  />
+                )}
               </div>
 
               {/* Procurar Cliente */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 <h3 className="mb-4 text-lg font-semibold text-neutral-800">
-                  Selecionar Clientes
+                  {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
                 </h3>
                 <ClientSearchBar
                   onSearchByName={handleSearchByName}
@@ -487,7 +609,7 @@ export function CampaignsPage() {
         </div>
 
         {/* Footer - Gerar Selos (somente no modo adicionar) */}
-        {mode === 'add' && selectedCount > 0 && (
+        {(mode === 'add' || mode === 'add-to-existing') && selectedCount > 0 && (
           <div className={cn(
             "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
             isCollapsed ? "lg:left-20" : "lg:left-64"
@@ -495,10 +617,10 @@ export function CampaignsPage() {
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-600">
-                  {selectedCount} cliente(s) selecionado(s)
+                  {selectedCount} {mode === 'add-to-existing' ? 'novo(s)' : ''} cliente(s) selecionado(s)
                 </p>
                 <p className="text-lg font-semibold text-neutral-800">
-                  Campanha: {campaignName || '(sem nome)'}
+                  {mode === 'add-to-existing' ? 'Adicionando à campanha: ' : 'Campanha: '}{campaignName || '(sem nome)'}
                 </p>
               </div>
               <Button
@@ -507,7 +629,7 @@ export function CampaignsPage() {
                 className="gap-2 bg-[#D97B35] text-white transition-all hover:bg-[#bd6126] hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
               >
                 <FileText className="h-4 w-4" />
-                {isSaving ? 'Gerando...' : 'Gerar Selos'}
+                {isSaving ? (mode === 'add-to-existing' ? 'Adicionando...' : 'Gerando...') : (mode === 'add-to-existing' ? 'Adicionar Clientes' : 'Gerar Selos')}
               </Button>
             </div>
           </div>

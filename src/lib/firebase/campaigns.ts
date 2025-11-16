@@ -194,6 +194,53 @@ export async function deleteCampaign(id: string): Promise<void> {
 }
 
 /**
+ * Adiciona clientes a uma campanha existente
+ * @param campaignId - ID da campanha
+ * @param newCompanyIds - IDs dos novos clientes a serem adicionados
+ * @param userId - ID do usuário que está fazendo a atualização
+ * @returns Campanha atualizada
+ */
+export async function addCompaniesToCampaign(
+  campaignId: string,
+  newCompanyIds: string[],
+  userId: string,
+): Promise<Campaign> {
+  const docRef = doc(db, COLLECTION_NAME, campaignId)
+  const campaignDoc = await getDoc(docRef)
+
+  if (!campaignDoc.exists()) {
+    throw new Error('Campanha não encontrada')
+  }
+
+  const currentCampaign = docToCampaign(campaignDoc.id, campaignDoc.data())
+  
+  // Remove duplicatas - apenas adiciona IDs que ainda não existem
+  const existingIds = new Set(currentCampaign.companyIds)
+  const uniqueNewIds = newCompanyIds.filter(id => !existingIds.has(id))
+  
+  if (uniqueNewIds.length === 0) {
+    throw new Error('Todos os clientes selecionados já estão vinculados a esta campanha')
+  }
+
+  const updatedCompanyIds = [...currentCampaign.companyIds, ...uniqueNewIds]
+
+  const updateData = {
+    companyIds: updatedCompanyIds,
+    updatedAt: Timestamp.now(),
+    updatedBy: userId,
+  }
+
+  await updateDoc(docRef, updateData)
+
+  const updatedDoc = await getDoc(docRef)
+  if (!updatedDoc.exists()) {
+    throw new Error('Erro ao atualizar campanha')
+  }
+
+  return docToCampaign(updatedDoc.id, updatedDoc.data())
+}
+
+/**
  * Busca campanhas de um usuário específico
  */
 export async function getCampaignsByUser(userId: string): Promise<Campaign[]> {
