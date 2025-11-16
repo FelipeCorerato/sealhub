@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Palette, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,19 +11,112 @@ import {
 } from '@/components/ui/sheet'
 import { useTheme, themes, type ThemeName } from '@/contexts/ThemeContext'
 import { useAccessibility } from '@/contexts/AccessibilityContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { cn } from '@/lib/utils'
 
 export function ThemeSelector() {
   const { currentTheme, setTheme } = useTheme()
   const { isDarkMode } = useAccessibility()
+  const { organization } = useOrganization()
   const [open, setOpen] = useState(false)
+  const [isCompanyTheme, setIsCompanyTheme] = useState(() => {
+    const saved = localStorage.getItem('isCompanyTheme')
+    return saved === 'true'
+  })
+
+  // Aplicar tema da empresa quando o componente monta, se necessário
+  useEffect(() => {
+    if (isCompanyTheme && organization) {
+      applyCompanyTheme(organization.theme.primaryColor || '#D97B35')
+    }
+  }, [organization]) // Reaplica quando a organização carrega
+
+  // Função auxiliar para aplicar o tema da empresa
+  const applyCompanyTheme = (primaryColor: string) => {
+    const root = document.documentElement
+    
+    root.style.setProperty('--color-primary', primaryColor)
+    
+    // Calcular cor hover (15% mais escuro)
+    const hoverColor = darkenColor(primaryColor, 15)
+    root.style.setProperty('--color-primary-hover', hoverColor)
+    
+    // Calcular cor light (88% mais claro)
+    const lightColor = lightenColor(primaryColor, 88)
+    root.style.setProperty('--color-primary-light', lightColor)
+    
+    // Aplicar background e text (usar valores padrão do tema laranja)
+    root.style.setProperty('--color-background', organization?.theme.lightBackgroundColor || '#FAF6EF')
+    root.style.setProperty('--color-text', '#2b2118')
+  }
 
   const handleThemeSelect = (themeName: ThemeName) => {
+    setIsCompanyTheme(false)
+    localStorage.setItem('isCompanyTheme', 'false')
     setTheme(themeName)
+    
+    // Forçar a aplicação completa do tema padrão
+    const selectedTheme = themes[themeName]
+    const root = document.documentElement
+    root.style.setProperty('--color-primary', selectedTheme.colors.primary)
+    root.style.setProperty('--color-primary-hover', selectedTheme.colors.primaryHover)
+    root.style.setProperty('--color-primary-light', selectedTheme.colors.primaryLight)
+    root.style.setProperty('--color-background', selectedTheme.colors.background)
+    root.style.setProperty('--color-text', selectedTheme.colors.text)
+    
     // Não fecha imediatamente para o usuário ver a mudança
     setTimeout(() => {
       setOpen(false)
     }, 300)
+  }
+
+  const handleCompanyThemeSelect = () => {
+    // Aplica as cores da empresa manualmente
+    if (organization) {
+      const primaryColor = organization.theme.primaryColor || '#D97B35'
+      applyCompanyTheme(primaryColor)
+      
+      setIsCompanyTheme(true)
+      localStorage.setItem('isCompanyTheme', 'true')
+    }
+    setTimeout(() => {
+      setOpen(false)
+    }, 300)
+  }
+
+  // Funções auxiliares para cores
+  function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    } : null
+  }
+
+  function rgbToHex(r: number, g: number, b: number): string {
+    return '#' + [r, g, b].map((x) => {
+      const hex = Math.round(x).toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }).join('')
+  }
+
+  function darkenColor(hex: string, percent: number): string {
+    const rgb = hexToRgb(hex)
+    if (!rgb) return hex
+    const factor = (100 - percent) / 100
+    return rgbToHex(rgb.r * factor, rgb.g * factor, rgb.b * factor)
+  }
+
+  function lightenColor(hex: string, percent: number): string {
+    const rgb = hexToRgb(hex)
+    if (!rgb) return hex
+    const factor = percent / 100
+    return rgbToHex(
+      rgb.r + (255 - rgb.r) * factor,
+      rgb.g + (255 - rgb.g) * factor,
+      rgb.b + (255 - rgb.b) * factor
+    )
   }
 
   return (
@@ -47,9 +140,107 @@ export function ThemeSelector() {
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto pr-6 -mr-6">
-          <div className="mt-8 space-y-4">
+          {/* Tema da Empresa */}
+          {organization && (
+            <div className="mt-8">
+              <h4 
+                className="mb-3 text-xs font-semibold uppercase tracking-wider"
+                style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+              >
+                Tema Personalizado
+              </h4>
+              <button
+                onClick={handleCompanyThemeSelect}
+                className={cn(
+                  'w-full rounded-xl border-2 p-6 text-left transition-all hover:shadow-md',
+                  !isDarkMode && isCompanyTheme && 'border-(--color-primary) bg-(--color-primary-light)',
+                  !isDarkMode && !isCompanyTheme && 'border-neutral-200 bg-white hover:border-neutral-300',
+                )}
+                style={
+                  isDarkMode
+                    ? {
+                        backgroundColor: isCompanyTheme ? 'rgba(0, 0, 0, 0.5)' : '#1f2937',
+                        borderColor: isCompanyTheme ? organization.theme.primaryColor : '#4b5563',
+                        borderWidth: isCompanyTheme ? '3px' : '2px',
+                      }
+                    : undefined
+                }
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {/* Preview das cores */}
+                    <div className="flex gap-2">
+                      <div
+                        className="h-12 w-12 rounded-lg shadow-sm"
+                        style={{ 
+                          backgroundColor: organization.theme.primaryColor || '#D97B35',
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : undefined
+                        }}
+                      />
+                      <div
+                        className="h-12 w-12 rounded-lg shadow-sm"
+                        style={{
+                          backgroundColor: lightenColor(organization.theme.primaryColor || '#D97B35', 88),
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : undefined
+                        }}
+                      />
+                      <div
+                        className="h-12 w-12 rounded-lg shadow-sm"
+                        style={{
+                          backgroundColor: '#FAF6EF',
+                          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : undefined
+                        }}
+                      />
+                    </div>
+
+                    {/* Nome da empresa */}
+                    <div>
+                      <h3 
+                        className="text-lg font-semibold"
+                        style={{ color: isDarkMode ? '#f3f4f6' : '#1f2937' }}
+                      >
+                        {organization.tradeName || organization.name}
+                      </h3>
+                      <p 
+                        className="text-sm"
+                        style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+                      >
+                        Tema da empresa
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Check se selecionado */}
+                  {isCompanyTheme && (
+                    <div
+                      className="rounded-full p-1"
+                      style={{ backgroundColor: organization.theme.primaryColor || '#D97B35' }}
+                    >
+                      <Check className="h-5 w-5 text-white" />
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Separador */}
+              <div 
+                className="my-6 border-t"
+                style={{ borderColor: isDarkMode ? '#374151' : '#e5e7eb' }}
+              />
+            </div>
+          )}
+
+          {/* Temas Padrão */}
+          <div className={organization ? '' : 'mt-8'}>
+            <h4 
+              className="mb-3 text-xs font-semibold uppercase tracking-wider"
+              style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+            >
+              Temas Padrão
+            </h4>
+            <div className="space-y-4">
           {Object.entries(themes).map(([key, themeData]) => {
-            const isSelected = currentTheme === key
+            const isSelected = !isCompanyTheme && currentTheme === key
             return (
               <button
                 key={key}
@@ -126,6 +317,7 @@ export function ThemeSelector() {
               </button>
             )
           })}
+            </div>
           </div>
 
           <div 

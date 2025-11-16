@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Users, Megaphone, Menu, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Megaphone, Menu, LogOut, ChevronLeft, ChevronRight, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -8,10 +8,15 @@ import { ThemeSelector } from '@/components/ThemeSelector'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAccessibility } from '@/contexts/AccessibilityContext'
 import { useSidebar } from '@/contexts/SidebarContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 
 const navigation = [
   { name: 'Clientes', href: '/clientes', icon: Users },
   { name: 'Campanhas', href: '/campanhas', icon: Megaphone },
+]
+
+const adminNavigation = [
+  { name: 'Admin', href: '/admin', icon: Settings },
 ]
 
 interface SidebarContentProps {
@@ -22,6 +27,7 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
   const location = useLocation()
   const { logout } = useAuth()
   const { isDarkMode } = useAccessibility()
+  const { organization, isAdmin } = useOrganization()
 
   const handleLogout = () => {
     logout()
@@ -30,13 +36,28 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="border-b border-neutral-200 p-6">
-        {!isCollapsed && <Logo />}
+      <div className="border-b border-neutral-200 p-6 transition-all duration-300">
+        {!isCollapsed && (
+          <div className="opacity-100 transition-opacity duration-200">
+            <Logo />
+          </div>
+        )}
         {isCollapsed && (
-          <div className="flex justify-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary)] text-white font-bold text-sm">
-              S
+          <div className="flex justify-center opacity-100 transition-opacity duration-200">
+            {organization?.theme.logoUrl ? (
+              <img 
+                src={organization.theme.logoUrl} 
+                alt={organization.name}
+                className="h-8 w-8 object-contain"
+              />
+            ) : (
+              <div 
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-bold text-sm"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+              >
+                {organization?.name.charAt(0) || 'V'}
             </div>
+            )}
           </div>
         )}
       </div>
@@ -80,6 +101,50 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
             </Link>
           )
         })}
+
+        {/* Admin Navigation - Apenas para admins */}
+        {isAdmin && (
+          <>
+            <div className="my-4 border-t border-neutral-200" />
+            {adminNavigation.map((item) => {
+              const isActive = location.pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  title={isCollapsed ? item.name : undefined}
+                  className={cn(
+                    'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isCollapsed && 'justify-center',
+                    isActive && !isDarkMode
+                      ? 'text-[var(--color-primary)] before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-[var(--color-primary)]'
+                      : '',
+                    isActive && isDarkMode
+                      ? 'text-[var(--color-primary)] font-bold'
+                      : '',
+                    !isActive
+                      ? 'text-neutral-700 hover:bg-neutral-100'
+                      : '',
+                  )}
+                  style={
+                    isActive
+                      ? { 
+                          backgroundColor: isDarkMode 
+                            ? 'rgba(0, 0, 0, 0.3)' 
+                            : 'var(--color-primary-light)',
+                          borderLeft: isDarkMode ? '4px solid var(--color-primary)' : undefined,
+                          paddingLeft: isDarkMode ? 'calc(0.75rem - 4px)' : undefined,
+                        }
+                      : undefined
+                  }
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && item.name}
+                </Link>
+              )
+            })}
+          </>
+        )}
       </nav>
 
       {/* Footer - Botões de Tema e SAIR */}

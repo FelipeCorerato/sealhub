@@ -2,6 +2,10 @@
 
 Índice de toda a documentação técnica do projeto.
 
+## ⭐ COMECE AQUI
+
+- [**IMPLEMENTACAO_COMPLETA.md**](./IMPLEMENTACAO_COMPLETA.md) - 🎯 Visão geral de tudo que foi implementado
+
 ## 🚀 Setup e Configuração
 
 - [**FIREBASE_AUTH_SETUP.md**](./FIREBASE_AUTH_SETUP.md) - Configuração da autenticação Firebase
@@ -24,6 +28,9 @@
 ## 🗄️ Banco de Dados
 
 - [**FIRESTORE_STRUCTURE.md**](./FIRESTORE_STRUCTURE.md) - Estrutura do Firestore
+- [**MULTI_TENANT_STRUCTURE.md**](./MULTI_TENANT_STRUCTURE.md) - ⭐ Sistema Multi-Tenant (Organizações)
+- [**USANDO_ORGANIZACAO_NO_FRONTEND.md**](./USANDO_ORGANIZACAO_NO_FRONTEND.md) - 🎯 Como usar dados da organização nos componentes
+- [**MIGRATION_TO_MULTI_TENANT.md**](./MIGRATION_TO_MULTI_TENANT.md) - Guia de migração para multi-tenant
 - [**AUDITORIA_CAMPANHAS.md**](./AUDITORIA_CAMPANHAS.md) - Sistema de auditoria
 
 ## 📋 Funcionalidades

@@ -1,6 +1,9 @@
 export type Status = 'active' | 'closed' | 'suspended'
 export type CompanyType = 'headquarters' | 'branch'
 
+// ===== ORGANIZATION TYPES =====
+export * from './organization'
+
 // ===== COMPANY TYPES =====
 
 // Dados básicos da empresa (vindo da API da Receita)
