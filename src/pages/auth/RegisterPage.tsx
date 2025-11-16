@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { isAllowedEmailDomain, getAllowedDomainsMessage } from '@/lib/email-domains'
 
 export function RegisterPage() {
   const [name, setName] = useState('')
@@ -33,6 +34,14 @@ export function RegisterPage() {
 
     if (!email.includes('@')) {
       toast.error('Email inválido')
+      return
+    }
+
+    // Validar domínio do email
+    if (!isAllowedEmailDomain(email)) {
+      toast.error('Email não permitido', {
+        description: getAllowedDomainsMessage(),
+      })
       return
     }
 
@@ -131,18 +140,21 @@ export function RegisterPage() {
                 htmlFor="email"
                 className="mb-2 block text-sm font-medium text-neutral-700"
               >
-                Email
+                Email corporativo
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="seu@iasabrasil.com.br"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 className="h-12"
                 autoComplete="email"
               />
+              <p className="mt-1 text-xs text-neutral-500">
+                Apenas emails corporativos são permitidos
+              </p>
             </div>
 
             {/* Senha */}

@@ -14,6 +14,7 @@ import {
 import type { User as FirebaseUser } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { upsertUserProfile } from '@/lib/firebase/users'
+import { isAllowedEmailDomain, getAllowedDomainsMessage } from '@/lib/email-domains'
 
 interface User {
   id: string
@@ -132,6 +133,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const userCredential = await signInWithPopup(auth, provider)
       
+      // Validar domínio do email
+      const userEmail = userCredential.user.email
+      if (!userEmail || !isAllowedEmailDomain(userEmail)) {
+        // Fazer logout do usuário não autorizado
+        await signOut(auth)
+        throw new Error(getAllowedDomainsMessage())
+      }
+      
       toast.success('Login realizado com sucesso!', {
         description: `Bem-vindo(a), ${userCredential.user.displayName || userCredential.user.email}`,
       })
@@ -188,6 +197,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = async (email: string, password: string, name: string) => {
     try {
+      // Validar domínio do email antes de criar a conta
+      if (!isAllowedEmailDomain(email)) {
+        throw new Error(getAllowedDomainsMessage())
+      }
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       
       // Atualizar o nome do usuário

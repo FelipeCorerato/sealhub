@@ -73,8 +73,10 @@ service cloud.firestore {
       allow read: if request.auth != null;
       
       // Apenas o próprio usuário pode criar/atualizar seu perfil
+      // E o email deve ser de um domínio permitido
       allow create, update: if request.auth != null
-        && request.auth.uid == userId;
+        && request.auth.uid == userId
+        && request.auth.token.email.matches('.*@iasabrasil\\.com\\.br$');
       
       // Ninguém pode deletar perfis de usuários
       allow delete: if false;
