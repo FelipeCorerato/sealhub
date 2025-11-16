@@ -85,15 +85,16 @@ export interface Campaign {
   
   // Metadata
   createdAt: Date
-  createdBy: string  // User ID
+  createdBy: string  // User ID que criou
   updatedAt: Date
+  updatedBy: string  // User ID da última atualização
 }
 
 // Dados para criar uma nova campanha
-export type CreateCampaignData = Omit<Campaign, 'id' | 'createdAt' | 'updatedAt'>
+export type CreateCampaignData = Omit<Campaign, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>
 
 // Dados para atualizar uma campanha
-export type UpdateCampaignData = Partial<Omit<Campaign, 'id' | 'createdAt' | 'createdBy'>>
+export type UpdateCampaignData = Partial<Omit<Campaign, 'id' | 'createdAt' | 'createdBy' | 'updatedAt' | 'updatedBy'>>
 
 export const campaignStatusLabels: Record<CampaignStatus, string> = {
   draft: 'Rascunho',

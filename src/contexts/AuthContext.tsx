@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import { upsertUserProfile } from '@/lib/firebase/users'
 
 interface User {
   id: string
@@ -51,14 +52,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Monitorar mudanças de autenticação do Firebase
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         // Usuário está logado
-        setUser({
+        const userData = {
           id: firebaseUser.uid,
           email: firebaseUser.email || '',
           name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuário',
-        })
+        }
+        setUser(userData)
+        
+        // Atualiza o perfil do usuário no Firestore
+        try {
+          await upsertUserProfile(userData.id, userData.name, userData.email)
+        } catch (error) {
+          console.error('Erro ao atualizar perfil do usuário:', error)
+        }
       } else {
         // Usuário não está logado
         setUser(null)

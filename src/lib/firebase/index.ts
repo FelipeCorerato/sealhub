@@ -26,3 +26,12 @@ export {
   getCampaignsByUser,
 } from './campaigns'
 
+// Users
+export {
+  upsertUserProfile,
+  getUserProfile,
+  getUserProfiles,
+  getUserDisplayName,
+  type UserProfile,
+} from './users'
+

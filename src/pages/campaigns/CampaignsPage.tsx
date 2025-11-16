@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { TopBar } from '@/components/TopBar'
 import { CampaignForm } from '@/components/CampaignForm'
@@ -21,6 +21,7 @@ import {
   getAllCampaignsWithCompanies,
   type CampaignWithCompanies,
 } from '@/lib/firebase/campaigns'
+import { getUserProfiles, type UserProfile } from '@/lib/firebase/users'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
@@ -51,6 +52,7 @@ export function CampaignsPage() {
   // Estados para busca de campanhas
   const [searchResults, setSearchResults] = useState<CampaignWithCompanies[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [userProfiles, setUserProfiles] = useState<Map<string, UserProfile>>(new Map())
 
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
@@ -142,6 +144,30 @@ export function CampaignsPage() {
   ) => {
     setInstructions((prev) => ({ ...prev, [key]: value }))
   }
+
+  // Buscar perfis dos usuários quando searchResults mudar
+  useEffect(() => {
+    const loadUserProfiles = async () => {
+      if (searchResults.length === 0) return
+
+      // Coletar todos os IDs únicos de usuários (createdBy e updatedBy)
+      const userIds = new Set<string>()
+      searchResults.forEach((campaign) => {
+        userIds.add(campaign.createdBy)
+        userIds.add(campaign.updatedBy)
+      })
+
+      // Buscar perfis
+      try {
+        const profiles = await getUserProfiles([...userIds])
+        setUserProfiles(profiles)
+      } catch (error) {
+        console.error('Erro ao buscar perfis de usuários:', error)
+      }
+    }
+
+    loadUserProfiles()
+  }, [searchResults])
 
   const handleGenerateSeals = async () => {
     if (!user) {
@@ -442,6 +468,7 @@ export function CampaignsPage() {
               {searchResults.length > 0 && (
                 <CampaignResultsTable
                   campaigns={searchResults}
+                  userProfiles={userProfiles}
                   onViewDetails={handleViewDetails}
                   onAddMore={handleAddMore}
                   onGenerateLabels={handleGenerateLabels}

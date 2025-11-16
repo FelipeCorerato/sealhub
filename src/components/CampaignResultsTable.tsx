@@ -1,7 +1,9 @@
-import { Plus, FileText, Calendar, User, Package } from 'lucide-react'
+import { Plus, FileText, Calendar, User, Package, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Campaign, Company } from '@/types'
+import type { UserProfile } from '@/lib/firebase/users'
+import { getUserDisplayName } from '@/lib/firebase/users'
 
 interface CampaignWithCompanies extends Campaign {
   companies: Company[]
@@ -9,6 +11,7 @@ interface CampaignWithCompanies extends Campaign {
 
 interface CampaignResultsTableProps {
   campaigns: CampaignWithCompanies[]
+  userProfiles?: Map<string, UserProfile>
   onViewDetails?: (campaign: CampaignWithCompanies) => void
   onAddMore?: (campaign: CampaignWithCompanies) => void
   onGenerateLabels?: (campaign: CampaignWithCompanies) => void
@@ -16,6 +19,7 @@ interface CampaignResultsTableProps {
 
 export function CampaignResultsTable({
   campaigns,
+  userProfiles,
   onAddMore,
   onGenerateLabels,
 }: CampaignResultsTableProps) {
@@ -55,11 +59,17 @@ export function CampaignResultsTable({
               <div className="flex flex-wrap gap-3 text-sm text-neutral-600">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  <span>{formatDate(campaign.createdAt)}</span>
+                  <span title="Data de criação">Criada em: {formatDate(campaign.createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span title="Última atualização" className="text-blue-600 font-medium">
+                    Atualizada em: {formatDate(campaign.updatedAt)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  <span>Remetente: {campaign.sender}</span>
+                  <span>Remetente: {campaign.sender.split('\n')[0]}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Package className="h-4 w-4" />
@@ -71,6 +81,33 @@ export function CampaignResultsTable({
                   Observação: {campaign.observation}
                 </p>
               )}
+              
+              {/* Informações de Auditoria */}
+              <div className="mt-3 pt-3 border-t border-neutral-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-neutral-500">
+                  <div>
+                    <span className="font-medium">Criada por:</span>{' '}
+                    <span title={`ID: ${campaign.createdBy}`}>
+                      {getUserDisplayName(
+                        campaign.createdBy,
+                        userProfiles?.get(campaign.createdBy)
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Última atualização por:</span>{' '}
+                    <span 
+                      className="text-blue-600"
+                      title={`ID: ${campaign.updatedBy}`}
+                    >
+                      {getUserDisplayName(
+                        campaign.updatedBy,
+                        userProfiles?.get(campaign.updatedBy)
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
             
             {/* Ações */}

@@ -48,6 +48,7 @@ function docToCampaign(id: string, data: DocumentData): Campaign {
     createdAt: timestampToDate(data.createdAt),
     createdBy: data.createdBy,
     updatedAt: timestampToDate(data.updatedAt),
+    updatedBy: data.updatedBy || data.createdBy, // Fallback para createdBy caso não exista
   }
 }
 
@@ -61,10 +62,12 @@ export async function createCampaign(
 ): Promise<Campaign> {
   const campaignsRef = collection(db, COLLECTION_NAME)
 
+  const now = Timestamp.now()
   const docData = {
     ...campaignData,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
+    createdAt: now,
+    updatedAt: now,
+    updatedBy: campaignData.createdBy, // Inicialmente, quem criou é quem atualizou
   }
 
   const docRef = await addDoc(campaignsRef, docData)
@@ -155,16 +158,21 @@ export async function getAllCampaigns(): Promise<Campaign[]> {
 
 /**
  * Atualiza uma campanha
+ * @param id - ID da campanha
+ * @param updates - Dados a serem atualizados
+ * @param userId - ID do usuário que está fazendo a atualização
  */
 export async function updateCampaign(
   id: string,
   updates: UpdateCampaignData,
+  userId: string,
 ): Promise<Campaign> {
   const docRef = doc(db, COLLECTION_NAME, id)
 
   const updateData = {
     ...updates,
     updatedAt: Timestamp.now(),
+    updatedBy: userId,
   }
 
   await updateDoc(docRef, updateData)

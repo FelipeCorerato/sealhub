@@ -168,6 +168,42 @@ async function checkDuplicate(cnpj: string) {
 }
 ```
 
+### `users` (Perfis de Usuários)
+
+Armazena informações básicas dos usuários para auditoria e exibição.
+
+**Estrutura do Documento:**
+
+```typescript
+{
+  id: string              // ID do usuário (uid do Firebase Auth)
+  name: string            // Nome de exibição
+  email: string           // Email do usuário
+  createdAt: Timestamp    // Data de criação do perfil
+  updatedAt: Timestamp    // Data da última atualização
+}
+```
+
+**Índices Necessários:**
+
+- `email` (ASC) - Para busca por email
+- `createdAt` (DESC) - Para listar por ordem de cadastro
+
+**Como Funciona:**
+
+1. Quando um usuário faz login ou se registra, seu perfil é automaticamente criado/atualizado no Firestore
+2. O perfil é usado para exibir nomes de usuários em auditorias (criação e atualização de campanhas)
+3. Os perfis são públicos (leitura) para todos os usuários autenticados
+4. Apenas o próprio usuário pode atualizar seu perfil
+5. Perfis não podem ser deletados
+
+**Operações Disponíveis:**
+
+- `upsertUserProfile(userId, name, email)` - Cria ou atualiza perfil
+- `getUserProfile(userId)` - Busca perfil por ID
+- `getUserProfiles(userIds[])` - Busca múltiplos perfis
+- `getUserDisplayName(userId, profile?)` - Retorna nome de exibição
+
 ## 🔮 Próximas Entidades
 
 ### `campaigns`
@@ -185,12 +221,14 @@ async function checkDuplicate(cnpj: string) {
     handleWithCare: boolean
     thisWayUp: boolean
   }
+  companyIds: string[]  // IDs das empresas vinculadas
   status: 'draft' | 'active' | 'completed' | 'cancelled'
   startDate?: Timestamp
   endDate?: Timestamp
   createdAt: Timestamp
-  createdBy: string
+  createdBy: string     // ID do usuário que criou
   updatedAt: Timestamp
+  updatedBy: string     // ID do usuário da última atualização
 }
 ```
 
