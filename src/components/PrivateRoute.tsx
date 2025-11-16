@@ -7,7 +7,7 @@ interface PrivateRouteProps {
 }
 
 export function PrivateRoute({ children }: PrivateRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, isEmailVerified } = useAuth()
 
   // Mostra loading enquanto verifica autenticação
   if (isLoading) {
@@ -24,6 +24,11 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
   // Redireciona para login se não autenticado
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  // Redireciona para verificação de email se não verificado
+  if (!isEmailVerified) {
+    return <Navigate to="/verificar-email" replace />
   }
 
   // Renderiza o conteúdo protegido

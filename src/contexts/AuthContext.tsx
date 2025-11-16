@@ -9,7 +9,8 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  sendEmailVerification
 } from 'firebase/auth'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -30,6 +31,8 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
+  checkEmailVerification: () => Promise<boolean>
+  isEmailVerified: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -48,6 +51,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
+  const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
@@ -62,6 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuário',
         }
         setUser(userData)
+        setIsEmailVerified(firebaseUser.emailVerified)
         
         // Atualiza o perfil do usuário no Firestore
         try {
@@ -72,6 +77,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         // Usuário não está logado
         setUser(null)
+        setIsEmailVerified(false)
       }
       setIsLoading(false)
     })
@@ -83,6 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Verificar se o email foi verificado
+      if (!userCredential.user.emailVerified) {
+        toast.info('Email não verificado', {
+          description: 'Você precisa verificar seu email antes de acessar o sistema.',
+        })
+        navigate('/verificar-email')
+        return
+      }
       
       toast.success('Login realizado com sucesso!', {
         description: `Bem-vindo(a), ${userCredential.user.displayName || userCredential.user.email}`,
@@ -141,6 +156,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(getAllowedDomainsMessage())
       }
       
+      // Google já verifica o email automaticamente, então podemos confiar
       toast.success('Login realizado com sucesso!', {
         description: `Bem-vindo(a), ${userCredential.user.displayName || userCredential.user.email}`,
       })
@@ -209,11 +225,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         displayName: name,
       })
       
-      toast.success('Conta criada com sucesso!', {
-        description: `Bem-vindo(a), ${name}`,
-      })
+      // Enviar email de verificação
+      try {
+        await sendEmailVerification(userCredential.user)
+        toast.success('Conta criada com sucesso!', {
+          description: 'Enviamos um email de verificação para você.',
+        })
+      } catch (emailError) {
+        console.error('Erro ao enviar email de verificação:', emailError)
+        toast.warning('Conta criada!', {
+          description: 'Mas não foi possível enviar o email de verificação.',
+        })
+      }
 
-      navigate('/clientes')
+      navigate('/verificar-email')
     } catch (error: unknown) {
       console.error('Erro no registro:', error)
       
@@ -239,6 +264,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  const checkEmailVerification = async (): Promise<boolean> => {
+    if (!auth.currentUser) return false
+    
+    // Recarregar o usuário para obter o status mais recente
+    await auth.currentUser.reload()
+    
+    const isVerified = auth.currentUser.emailVerified
+    setIsEmailVerified(isVerified)
+    
+    return isVerified
+  }
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -247,6 +284,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loginWithGoogle,
     logout,
     register,
+    checkEmailVerification,
+    isEmailVerified,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

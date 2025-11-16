@@ -8,6 +8,9 @@
 - [**GOOGLE_AUTH_SETUP.md**](./GOOGLE_AUTH_SETUP.md) - Configuração do login com Google
 - [**FIRESTORE_RULES_SETUP.md**](./FIRESTORE_RULES_SETUP.md) - Configuração das regras de segurança
 - [**EMAIL_DOMAINS_CONFIG.md**](./EMAIL_DOMAINS_CONFIG.md) - Configuração de domínios de email permitidos
+- [**EMAIL_VERIFICATION.md**](./EMAIL_VERIFICATION.md) - Sistema de verificação de email
+- [**RESUMO_VERIFICACAO_EMAIL.md**](./RESUMO_VERIFICACAO_EMAIL.md) - ⭐ Resumo executivo do sistema de verificação
+- [**FIREBASE_EMAIL_CONFIG.md**](./FIREBASE_EMAIL_CONFIG.md) - Configuração e personalização de emails
 - [**FIRESTORE_RULES_MULTIPLOS_DOMINIOS.md**](./FIRESTORE_RULES_MULTIPLOS_DOMINIOS.md) - Exemplo de regras para múltiplos domínios
 - [**GITHUB_ACTIONS_SETUP.md**](./GITHUB_ACTIONS_SETUP.md) - Configuração de CI/CD
 

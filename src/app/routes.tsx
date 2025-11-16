@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { PrivateRoute } from '@/components/PrivateRoute'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
+import { EmailVerificationPage } from '@/pages/auth/EmailVerificationPage'
 import { ClientsPage } from '@/pages/clients/ClientsPage'
 import { CampaignsPage } from '@/pages/campaigns/CampaignsPage'
 
@@ -24,6 +25,7 @@ export function AppRoutes() {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegisterPage />} />
+      <Route path="/verificar-email" element={<EmailVerificationPage />} />
       <Route
         path="/clientes"
         element={
