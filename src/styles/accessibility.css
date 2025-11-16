@@ -54,14 +54,18 @@
   position: fixed;
   bottom: 6rem;
   right: 2rem;
-  width: 360px;
-  max-height: 600px;
+  min-width: min(22.5rem, calc(100vw - 4rem));
+  max-width: min(28rem, calc(100vw - 4rem));
+  width: auto;
+  max-height: min(37.5rem, calc(100vh - 10rem));
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15), 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   z-index: var(--z-accessibility-menu);
   overflow: hidden;
   animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -80,9 +84,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid #e5e7eb;
   background-color: var(--color-primary-light);
+  flex-shrink: 0;
 }
 
 .accessibility-menu-title {
@@ -90,12 +95,16 @@
   align-items: center;
   gap: 0.625rem;
   color: var(--color-primary);
+  min-width: 0;
+  flex: 1;
 }
 
 .accessibility-menu-title h2 {
-  font-size: 1.125rem;
+  font-size: 1.0625em;
   font-weight: 600;
   margin: 0;
+  line-height: 1.3;
+  overflow-wrap: break-word;
 }
 
 .accessibility-close-button {
@@ -118,25 +127,28 @@
 
 /* Menu Content */
 .accessibility-menu-content {
-  padding: 1rem;
-  max-height: 500px;
+  padding: 0.875rem;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 /* Menu Item */
 .accessibility-menu-item {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 0.875rem;
   width: 100%;
-  padding: 1rem;
+  padding: 0.875rem;
   border: none;
   background-color: transparent;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
   margin-bottom: 0.5rem;
+  min-height: 0;
 }
 
 .accessibility-menu-item:hover {
@@ -165,6 +177,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
 }
 
 .accessibility-menu-item.reset .accessibility-menu-item-icon {
@@ -176,34 +191,42 @@
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  min-width: 0;
 }
 
 .accessibility-menu-item-label {
-  font-size: 0.9375rem;
+  font-size: 0.9375em;
   font-weight: 500;
   color: #1f2937;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .accessibility-menu-item-description {
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   color: #6b7280;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Menu Section */
 .accessibility-menu-section {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 0.875rem;
   margin-bottom: 0.5rem;
+  min-width: 0;
 }
 
 /* Font Controls */
 .accessibility-font-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  padding: 0 1rem 1rem;
+  gap: 0.625rem;
+  padding: 0 0.875rem 0.875rem;
 }
 
 .accessibility-font-button {
@@ -211,15 +234,18 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   border: 2px solid var(--color-primary);
   background-color: white;
   color: var(--color-primary);
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.875em;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  line-height: 1.4;
+  min-height: 2.5rem;
+  overflow-wrap: break-word;
 }
 
 .accessibility-font-button:hover:not(:disabled) {
@@ -1044,18 +1070,74 @@
   color: #ffffff;
 }
 
+/* Scrollbar personalizado para o menu */
+.accessibility-menu-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.accessibility-menu-content::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.accessibility-menu-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0.25rem;
+}
+
+.accessibility-menu-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.25rem;
+}
+
+.accessibility-menu-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Scrollbar dark mode */
+.dark-mode .accessibility-menu-content {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.dark-mode .accessibility-menu-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .accessibility-menu-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark-mode .accessibility-menu-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .accessibility-menu {
     right: 1rem;
     left: 1rem;
     width: auto;
+    min-width: auto;
+    max-width: calc(100vw - 2rem);
     bottom: 5.5rem;
   }
 
   .accessibility-floating-button {
     bottom: 1.5rem;
     right: 1.5rem;
+  }
+
+  .accessibility-menu-content {
+    padding: 0.75rem;
+  }
+
+  .accessibility-menu-item {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .accessibility-font-controls {
+    padding: 0 0.75rem 0.75rem;
   }
 }
 
