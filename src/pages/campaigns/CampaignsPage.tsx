@@ -20,6 +20,7 @@ import {
   searchCampaignsByCompanyName,
   getAllCampaignsWithCompanies,
   addCompaniesToCampaign,
+  updateCampaign,
   type CampaignWithCompanies,
 } from '@/lib/firebase/campaigns'
 import { getUserProfiles, type UserProfile } from '@/lib/firebase/users'
@@ -34,7 +35,7 @@ export function CampaignsPage() {
   const { user } = useAuth()
   const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<'add' | 'search' | 'add-to-existing'>('add')
+  const [mode, setMode] = useState<'add' | 'search' | 'add-to-existing' | 'edit'>('add')
   
   // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
@@ -449,6 +450,82 @@ export function CampaignsPage() {
     })
   }
 
+  const handleEdit = (campaign: CampaignWithCompanies) => {
+    // Muda para o modo de edição
+    setMode('edit')
+    setEditingCampaign(campaign)
+    
+    // Carrega os dados da campanha no formulário
+    setCampaignName(campaign.name)
+    setSender(campaign.sender)
+    setObservation(campaign.observation)
+    setInstructions(campaign.instructions)
+    
+    // Limpa a seleção de clientes (não editamos clientes aqui)
+    setSelectedIds(new Set())
+    setCompanies([])
+    
+    toast.info(`Editando campanha "${campaign.name}"`, {
+      description: 'Altere os dados da campanha e salve as alterações.',
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!user || !editingCampaign) {
+      toast.error('Erro ao salvar', {
+        description: 'Dados insuficientes para salvar a edição.',
+      })
+      return
+    }
+
+    // Validação básica
+    if (!campaignName.trim()) {
+      toast.error('Nome da campanha é obrigatório')
+      return
+    }
+    if (!sender.trim()) {
+      toast.error('Remetente é obrigatório')
+      return
+    }
+    if (!observation.trim()) {
+      toast.error('Observação é obrigatória')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      await updateCampaign(
+        editingCampaign.id,
+        {
+          name: campaignName,
+          sender,
+          observation,
+          instructions,
+        },
+        user.id
+      )
+
+      toast.success('Campanha atualizada com sucesso!', {
+        description: `"${campaignName}" foi atualizada.`,
+      })
+
+      // Volta para o modo de busca e atualiza os resultados
+      setMode('search')
+      setEditingCampaign(null)
+      handleListAllCampaigns()
+    } catch (error) {
+      console.error('Erro ao atualizar campanha:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao atualizar campanha'
+      
+      toast.error('Erro ao atualizar campanha', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const handleGenerateLabels = async (campaign: CampaignWithCompanies) => {
     try {
       if (!campaign.companies || campaign.companies.length === 0) {
@@ -498,20 +575,35 @@ export function CampaignsPage() {
             onBuscarCliente={handleSearchCampaign}
           />
 
-          {mode === 'add' || mode === 'add-to-existing' ? (
+          {mode === 'add' || mode === 'add-to-existing' || mode === 'edit' ? (
             <>
               {/* Banner informativo quando está adicionando a uma campanha existente */}
               {mode === 'add-to-existing' && editingCampaign && (
-                <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4 shadow-sm">
+                <div 
+                  className="rounded-2xl border p-4 shadow-sm"
+                  style={{
+                    backgroundColor: 'var(--color-primary-light)',
+                    borderColor: 'var(--color-primary)',
+                  }}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500">
+                    <div 
+                      className="flex h-10 w-10 items-center justify-center rounded-full"
+                      style={{ backgroundColor: 'var(--color-primary)' }}
+                    >
                       <Plus className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-blue-900">
+                      <h3 
+                        className="font-semibold"
+                        style={{ color: 'var(--color-primary)' }}
+                      >
                         Adicionando clientes à campanha existente
                       </h3>
-                      <p className="text-sm text-blue-700">
+                      <p 
+                        className="text-sm"
+                        style={{ color: 'var(--color-text)' }}
+                      >
                         Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) já vinculado(s))
                       </p>
                     </div>
@@ -533,7 +625,63 @@ export function CampaignsPage() {
                         setSelectedIds(new Set())
                         setCompanies([])
                       }}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                      className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Banner informativo quando está editando uma campanha */}
+              {mode === 'edit' && editingCampaign && (
+                <div 
+                  className="rounded-2xl border p-4 shadow-sm"
+                  style={{
+                    backgroundColor: 'var(--color-primary-light)',
+                    borderColor: 'var(--color-primary)',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="flex h-10 w-10 items-center justify-center rounded-full"
+                      style={{ backgroundColor: 'var(--color-primary)' }}
+                    >
+                      <FileText className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 
+                        className="font-semibold"
+                        style={{ color: 'var(--color-primary)' }}
+                      >
+                        Editando campanha
+                      </h3>
+                      <p 
+                        className="text-sm"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) vinculado(s))
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setMode('search')
+                        setEditingCampaign(null)
+                        setCampaignName('')
+                        setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
+                        setObservation('')
+                        setInstructions({
+                          fragile: true,
+                          attention: true,
+                          handleWithCare: true,
+                          thisWayUp: true,
+                        })
+                        setSelectedIds(new Set())
+                        setCompanies([])
+                      }}
+                      className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
                     >
                       Cancelar
                     </Button>
@@ -579,35 +727,39 @@ export function CampaignsPage() {
                 )}
               </div>
 
-              {/* Procurar Cliente */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-neutral-800">
-                    {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
-                  </h3>
-                  <Button
-                    onClick={handleListAll}
-                    disabled={isLoading}
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Listar Todos os Clientes
-                  </Button>
-                </div>
-                <ClientSearchBar
-                  onSearchByName={handleSearchByName}
-                  onSearchByCNPJ={handleSearchByCNPJ}
-                  isLoading={isLoading}
-                />
-              </div>
+              {/* Procurar Cliente (apenas se não estiver editando) */}
+              {mode !== 'edit' && (
+                <>
+                  <div className="rounded-2xl bg-white p-6 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-neutral-800">
+                        {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
+                      </h3>
+                      <Button
+                        onClick={handleListAll}
+                        disabled={isLoading}
+                        variant="outline"
+                        className="gap-2"
+                      >
+                        <Search className="h-4 w-4" />
+                        Listar Todos os Clientes
+                      </Button>
+                    </div>
+                    <ClientSearchBar
+                      onSearchByName={handleSearchByName}
+                      onSearchByCNPJ={handleSearchByCNPJ}
+                      isLoading={isLoading}
+                    />
+                  </div>
 
-              {/* Tabela de Seleção de Clientes */}
-              <ClientSelectionTable
-                companies={companies}
-                selectedIds={selectedIds}
-                onToggleClient={handleToggleClient}
-              />
+                  {/* Tabela de Seleção de Clientes */}
+                  <ClientSelectionTable
+                    companies={companies}
+                    selectedIds={selectedIds}
+                    onToggleClient={handleToggleClient}
+                  />
+                </>
+              )}
             </>
           ) : (
             <>
@@ -640,6 +792,7 @@ export function CampaignsPage() {
                   campaigns={searchResults}
                   userProfiles={userProfiles}
                   onViewDetails={handleViewDetails}
+                  onEdit={handleEdit}
                   onAddMore={handleAddMore}
                   onGenerateLabels={handleGenerateLabels}
                 />
@@ -674,10 +827,63 @@ export function CampaignsPage() {
               <Button
                 onClick={handleGenerateSeals}
                 disabled={isSaving}
-                className="gap-2 bg-[#D97B35] text-white transition-all hover:bg-[#bd6126] hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
+                className="gap-2 text-white transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
+                style={{
+                  backgroundColor: isSaving ? 'var(--color-primary)' : 'var(--color-primary)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                  }
+                }}
               >
                 <FileText className="h-4 w-4" />
                 {isSaving ? (mode === 'add-to-existing' ? 'Adicionando...' : 'Gerando...') : (mode === 'add-to-existing' ? 'Adicionar Clientes' : 'Gerar Selos')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer - Salvar Edição (somente no modo editar) */}
+        {mode === 'edit' && (
+          <div className={cn(
+            "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
+            isCollapsed ? "lg:left-20" : "lg:left-64"
+          )}>
+            <div className="mx-auto flex max-w-7xl items-center justify-between">
+              <div>
+                <p className="text-sm text-neutral-600">
+                  Editando campanha
+                </p>
+                <p className="text-lg font-semibold text-neutral-800">
+                  Campanha: {campaignName || '(sem nome)'}
+                </p>
+              </div>
+              <Button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="gap-2 text-white transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
+                style={{
+                  backgroundColor: isSaving ? 'var(--color-primary)' : 'var(--color-primary)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSaving) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                  }
+                }}
+              >
+                <FileText className="h-4 w-4" />
+                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </div>
           </div>

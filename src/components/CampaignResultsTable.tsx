@@ -1,4 +1,4 @@
-import { Plus, FileText, Calendar, User, Package, Clock } from 'lucide-react'
+import { Plus, FileText, Calendar, User, Package, Clock, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Campaign, Company } from '@/types'
@@ -14,6 +14,7 @@ interface CampaignResultsTableProps {
   userProfiles?: Map<string, UserProfile>
   onViewDetails?: (campaign: CampaignWithCompanies) => void
   onAddMore?: (campaign: CampaignWithCompanies) => void
+  onEdit?: (campaign: CampaignWithCompanies) => void
   onGenerateLabels?: (campaign: CampaignWithCompanies) => void
 }
 
@@ -21,6 +22,7 @@ export function CampaignResultsTable({
   campaigns,
   userProfiles,
   onAddMore,
+  onEdit,
   onGenerateLabels,
 }: CampaignResultsTableProps) {
   if (campaigns.length === 0) {
@@ -112,12 +114,24 @@ export function CampaignResultsTable({
             
             {/* Ações */}
             <div className="flex gap-2 ml-4">
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(campaign)}
+                  className="gap-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
+                  title="Editar campanha"
+                >
+                  <Edit className="h-4 w-4" />
+                  Editar
+                </Button>
+              )}
               {onAddMore && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onAddMore(campaign)}
-                  className="gap-2 border-[#D97B35] text-[#D97B35] hover:bg-[#D97B35] hover:text-white"
+                  className="gap-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
                   title="Adicionar mais clientes"
                 >
                   <Plus className="h-4 w-4" />
@@ -128,7 +142,16 @@ export function CampaignResultsTable({
                 <Button
                   size="sm"
                   onClick={() => onGenerateLabels(campaign)}
-                  className="gap-2 bg-[#8B4513] text-white hover:bg-[#6d3410]"
+                  className="gap-2 text-white"
+                  style={{
+                    backgroundColor: 'var(--color-primary)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                  }}
                   title="Gerar selos"
                 >
                   <FileText className="h-4 w-4" />

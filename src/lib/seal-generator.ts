@@ -205,6 +205,12 @@ function generateSealsHtml(sealData: SealData): string {
             size: A4 landscape;
             margin: 0;
           }
+          @media print {
+            * {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
           body {
             padding: 0;
             background: #fff;
@@ -296,6 +302,8 @@ function generateSealsHtml(sealData: SealData): string {
             padding: 2mm 3mm;
             border-radius: 4px;
             text-align: center;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           .section-title {
             font-size: 20px;
@@ -350,6 +358,8 @@ function generateSealsHtml(sealData: SealData): string {
             display: flex;
             flex-direction: column;
             gap: 2mm;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           .instruction-square-title,
           .instruction-square-footer {
