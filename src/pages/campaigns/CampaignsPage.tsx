@@ -243,6 +243,8 @@ export function CampaignsPage() {
             observation,
             instructions,
             companies: selectedCompanies,
+            organizationLogoUrl: organization?.theme.logoUrl,
+            organizationName: organization?.tradeName || organization?.name,
           })
         }, 500)
 
@@ -289,6 +291,8 @@ export function CampaignsPage() {
             observation,
             instructions,
             companies: selectedCompanies,
+            organizationLogoUrl: organization?.theme.logoUrl,
+            organizationName: organization?.tradeName || organization?.name,
           })
         }, 500)
       }
@@ -464,6 +468,8 @@ export function CampaignsPage() {
           observation: campaign.observation,
           instructions: campaign.instructions,
           companies: campaign.companies,
+          organizationLogoUrl: organization?.theme.logoUrl,
+          organizationName: organization?.tradeName || organization?.name,
         })
       }, 500)
     } catch (error) {
