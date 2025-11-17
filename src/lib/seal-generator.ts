@@ -94,6 +94,7 @@ function buildInstructionSquare(instructions: CampaignInstructions): string {
 
 function buildLogoBox(logoUrl?: string): string {
   const src = logoUrl ? escapeHtml(logoUrl) : defaultLogo
+  console.log({ src })
   return `<div class="logo-box"><img src="${defaultLogo}" alt="Logo" /></div>`
 }
 
