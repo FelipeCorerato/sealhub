@@ -7,7 +7,7 @@ import { ClientSelectionTable } from '@/components/ClientSelectionTable'
 import { CampaignSearchBar } from '@/components/CampaignSearchBar'
 import { CampaignResultsTable } from '@/components/CampaignResultsTable'
 import { Button } from '@/components/ui/button'
-import { FileText, Plus, Search } from 'lucide-react'
+import { FileText, Search } from 'lucide-react'
 import type { Company, CampaignInstructions } from '@/types'
 import {
   searchCompaniesByName,
@@ -19,7 +19,6 @@ import {
   searchCampaignsWithCompaniesByName,
   searchCampaignsByCompanyName,
   getAllCampaignsWithCompanies,
-  addCompaniesToCampaign,
   updateCampaign,
   type CampaignWithCompanies,
 } from '@/lib/firebase/campaigns'
@@ -35,7 +34,7 @@ export function CampaignsPage() {
   const { user } = useAuth()
   const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<'add' | 'search' | 'add-to-existing' | 'edit'>('add')
+  const [mode, setMode] = useState<'add' | 'search' | 'edit'>('add')
   
   // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
@@ -218,21 +217,23 @@ export function CampaignsPage() {
         return
       }
 
-      // Verifica se está adicionando a uma campanha existente ou criando uma nova
-      if (mode === 'add-to-existing' && editingCampaign) {
-        // Adiciona clientes a uma campanha existente
-        const updatedCampaign = await addCompaniesToCampaign(
+      // Verifica se está editando uma campanha existente ou criando uma nova
+      if (mode === 'edit' && editingCampaign) {
+        // Atualiza a campanha existente com novos clientes
+        await updateCampaign(
           editingCampaign.id,
-          Array.from(selectedIds),
+          {
+            companyIds: Array.from(selectedIds),
+          },
           user.id
         )
 
-        toast.success('Clientes adicionados com sucesso!', {
-          description: `${selectedIds.size} novo(s) cliente(s) adicionado(s) à campanha "${updatedCampaign.name}".`,
+        toast.success('Clientes atualizados com sucesso!', {
+          description: `${selectedIds.size} cliente(s) vinculado(s) à campanha "${campaignName}".`,
         })
 
-        // Gera os selos apenas dos novos clientes adicionados
-        toast.info('Gerando selos dos novos clientes...', {
+        // Gera os selos de todos os clientes selecionados
+        toast.info('Gerando selos...', {
           description: 'A janela de impressão será aberta em instantes.',
         })
 
@@ -315,7 +316,7 @@ export function CampaignsPage() {
       const errorMessage =
         error instanceof Error ? error.message : 'Erro ao processar campanha'
       
-      toast.error(mode === 'add-to-existing' ? 'Erro ao adicionar clientes' : 'Erro ao criar campanha', {
+      toast.error(mode === 'edit' ? 'Erro ao atualizar campanha' : 'Erro ao criar campanha', {
         description: errorMessage,
       })
     } finally {
@@ -430,28 +431,8 @@ export function CampaignsPage() {
     toast.info('Visualização de detalhes em desenvolvimento')
   }
 
-  const handleAddMore = (campaign: CampaignWithCompanies) => {
-    // Muda para o modo de adicionar clientes a uma campanha existente
-    setMode('add-to-existing')
-    setEditingCampaign(campaign)
-    
-    // Carrega os dados da campanha no formulário
-    setCampaignName(campaign.name)
-    setSender(campaign.sender)
-    setObservation(campaign.observation)
-    setInstructions(campaign.instructions)
-    
-    // Limpa a seleção de clientes
-    setSelectedIds(new Set())
-    setCompanies([])
-    
-    toast.info(`Adicionando clientes à campanha "${campaign.name}"`, {
-      description: 'Selecione os novos clientes que deseja adicionar.',
-    })
-  }
-
   const handleEdit = (campaign: CampaignWithCompanies) => {
-    // Muda para o modo de edição
+    // Muda para o modo de edição unificado
     setMode('edit')
     setEditingCampaign(campaign)
     
@@ -461,12 +442,13 @@ export function CampaignsPage() {
     setObservation(campaign.observation)
     setInstructions(campaign.instructions)
     
-    // Limpa a seleção de clientes (não editamos clientes aqui)
-    setSelectedIds(new Set())
-    setCompanies([])
+    // Carrega os clientes já vinculados à campanha
+    const existingCompanyIds = new Set(campaign.companies.map(c => c.id))
+    setSelectedIds(existingCompanyIds)
+    setCompanies(campaign.companies)
     
     toast.info(`Editando campanha "${campaign.name}"`, {
-      description: 'Altere os dados da campanha e salve as alterações.',
+      description: 'Altere os dados da campanha e gerencie os clientes vinculados.',
     })
   }
 
@@ -494,6 +476,7 @@ export function CampaignsPage() {
 
     setIsSaving(true)
     try {
+      // Atualiza os dados da campanha e os clientes vinculados
       await updateCampaign(
         editingCampaign.id,
         {
@@ -501,12 +484,13 @@ export function CampaignsPage() {
           sender,
           observation,
           instructions,
+          companyIds: Array.from(selectedIds),
         },
         user.id
       )
 
       toast.success('Campanha atualizada com sucesso!', {
-        description: `"${campaignName}" foi atualizada.`,
+        description: `"${campaignName}" foi atualizada com ${selectedIds.size} cliente(s) vinculado(s).`,
       })
 
       // Volta para o modo de busca e atualiza os resultados
@@ -575,64 +559,8 @@ export function CampaignsPage() {
             onBuscarCliente={handleSearchCampaign}
           />
 
-          {mode === 'add' || mode === 'add-to-existing' || mode === 'edit' ? (
+          {mode === 'add' || mode === 'edit' ? (
             <>
-              {/* Banner informativo quando está adicionando a uma campanha existente */}
-              {mode === 'add-to-existing' && editingCampaign && (
-                <div 
-                  className="rounded-2xl border p-4 shadow-sm"
-                  style={{
-                    backgroundColor: 'var(--color-primary-light)',
-                    borderColor: 'var(--color-primary)',
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="flex h-10 w-10 items-center justify-center rounded-full"
-                      style={{ backgroundColor: 'var(--color-primary)' }}
-                    >
-                      <Plus className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 
-                        className="font-semibold"
-                        style={{ color: 'var(--color-primary)' }}
-                      >
-                        Adicionando clientes à campanha existente
-                      </h3>
-                      <p 
-                        className="text-sm"
-                        style={{ color: 'var(--color-text)' }}
-                      >
-                        Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) já vinculado(s))
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setMode('search')
-                        setEditingCampaign(null)
-                        setCampaignName('')
-                        setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
-                        setObservation('')
-                        setInstructions({
-                          fragile: true,
-                          attention: true,
-                          handleWithCare: true,
-                          thisWayUp: true,
-                        })
-                        setSelectedIds(new Set())
-                        setCompanies([])
-                      }}
-                      className="border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {/* Banner informativo quando está editando uma campanha */}
               {mode === 'edit' && editingCampaign && (
                 <div 
@@ -660,7 +588,7 @@ export function CampaignsPage() {
                         className="text-sm"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) vinculado(s))
+                        Campanha: <span className="font-medium">{editingCampaign.name}</span> ({editingCampaign.companies.length} cliente(s) vinculado(s)). Você pode editar os dados e gerenciar os clientes.
                       </p>
                     </div>
                     <Button
@@ -691,75 +619,47 @@ export function CampaignsPage() {
 
               {/* Formulário da Campanha */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
-                {mode === 'add-to-existing' ? (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-neutral-800">
-                      Informações da Campanha (Somente Leitura)
-                    </h3>
-                    <div className="grid gap-4 rounded-lg bg-neutral-50 p-4">
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-600">Nome da Campanha</label>
-                        <p className="mt-1 text-base text-neutral-800">{campaignName}</p>
-                      </div>
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-600">Remetente</label>
-                          <p className="mt-1 whitespace-pre-line text-sm text-neutral-800">{sender}</p>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-600">Observação</label>
-                          <p className="mt-1 text-base text-neutral-800">{observation}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <CampaignForm
-                    name={campaignName}
-                    sender={sender}
-                    observation={observation}
-                    instructions={instructions}
-                    onNameChange={setCampaignName}
-                    onSenderChange={setSender}
-                    onObservationChange={setObservation}
-                    onInstructionChange={handleInstructionChange}
-                  />
-                )}
+                <CampaignForm
+                  name={campaignName}
+                  sender={sender}
+                  observation={observation}
+                  instructions={instructions}
+                  onNameChange={setCampaignName}
+                  onSenderChange={setSender}
+                  onObservationChange={setObservation}
+                  onInstructionChange={handleInstructionChange}
+                />
               </div>
 
-              {/* Procurar Cliente (apenas se não estiver editando) */}
-              {mode !== 'edit' && (
-                <>
-                  <div className="rounded-2xl bg-white p-6 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-neutral-800">
-                        {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
-                      </h3>
-                      <Button
-                        onClick={handleListAll}
-                        disabled={isLoading}
-                        variant="outline"
-                        className="gap-2"
-                      >
-                        <Search className="h-4 w-4" />
-                        Listar Todos os Clientes
-                      </Button>
-                    </div>
-                    <ClientSearchBar
-                      onSearchByName={handleSearchByName}
-                      onSearchByCNPJ={handleSearchByCNPJ}
-                      isLoading={isLoading}
-                    />
-                  </div>
+              {/* Procurar Cliente */}
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-neutral-800">
+                    {mode === 'edit' ? 'Gerenciar Clientes da Campanha' : 'Selecionar Clientes'}
+                  </h3>
+                  <Button
+                    onClick={handleListAll}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Listar Todos os Clientes
+                  </Button>
+                </div>
+                <ClientSearchBar
+                  onSearchByName={handleSearchByName}
+                  onSearchByCNPJ={handleSearchByCNPJ}
+                  isLoading={isLoading}
+                />
+              </div>
 
-                  {/* Tabela de Seleção de Clientes */}
-                  <ClientSelectionTable
-                    companies={companies}
-                    selectedIds={selectedIds}
-                    onToggleClient={handleToggleClient}
-                  />
-                </>
-              )}
+              {/* Tabela de Seleção de Clientes */}
+              <ClientSelectionTable
+                companies={companies}
+                selectedIds={selectedIds}
+                onToggleClient={handleToggleClient}
+              />
             </>
           ) : (
             <>
@@ -793,7 +693,6 @@ export function CampaignsPage() {
                   userProfiles={userProfiles}
                   onViewDetails={handleViewDetails}
                   onEdit={handleEdit}
-                  onAddMore={handleAddMore}
                   onGenerateLabels={handleGenerateLabels}
                 />
               )}
@@ -809,82 +708,85 @@ export function CampaignsPage() {
           )}
         </div>
 
-        {/* Footer - Gerar Selos (somente no modo adicionar) */}
-        {(mode === 'add' || mode === 'add-to-existing') && selectedCount > 0 && (
+        {/* Footer Unificado */}
+        {(mode === 'add' || mode === 'edit') && (
           <div className={cn(
             "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
             isCollapsed ? "lg:left-20" : "lg:left-64"
           )}>
-            <div className="mx-auto flex max-w-7xl items-center justify-between">
-              <div>
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+              <div className="flex-1">
                 <p className="text-sm text-neutral-600">
-                  {selectedCount} {mode === 'add-to-existing' ? 'novo(s)' : ''} cliente(s) selecionado(s)
-                </p>
-                <p className="text-lg font-semibold text-neutral-800">
-                  {mode === 'add-to-existing' ? 'Adicionando à campanha: ' : 'Campanha: '}{campaignName || '(sem nome)'}
-                </p>
-              </div>
-              <Button
-                onClick={handleGenerateSeals}
-                disabled={isSaving}
-                className="gap-2 text-white transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
-                style={{
-                  backgroundColor: isSaving ? 'var(--color-primary)' : 'var(--color-primary)',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                  {mode === 'edit' 
+                    ? `Editando campanha • ${selectedCount} cliente(s) vinculado(s)`
+                    : `${selectedCount} cliente(s) selecionado(s)`
                   }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
-                  }
-                }}
-              >
-                <FileText className="h-4 w-4" />
-                {isSaving ? (mode === 'add-to-existing' ? 'Adicionando...' : 'Gerando...') : (mode === 'add-to-existing' ? 'Adicionar Clientes' : 'Gerar Selos')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Footer - Salvar Edição (somente no modo editar) */}
-        {mode === 'edit' && (
-          <div className={cn(
-            "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
-            isCollapsed ? "lg:left-20" : "lg:left-64"
-          )}>
-            <div className="mx-auto flex max-w-7xl items-center justify-between">
-              <div>
-                <p className="text-sm text-neutral-600">
-                  Editando campanha
                 </p>
                 <p className="text-lg font-semibold text-neutral-800">
                   Campanha: {campaignName || '(sem nome)'}
                 </p>
               </div>
-              <Button
-                onClick={handleSaveEdit}
-                disabled={isSaving}
-                className="gap-2 text-white transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
-                style={{
-                  backgroundColor: isSaving ? 'var(--color-primary)' : 'var(--color-primary)',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSaving) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary)'
-                  }
-                }}
-              >
-                <FileText className="h-4 w-4" />
-                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
-              </Button>
+              <div className="flex gap-2">
+                {mode === 'edit' && (
+                  <Button
+                    onClick={handleSaveEdit}
+                    disabled={isSaving}
+                    className="gap-2 text-white transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
+                    style={{
+                      backgroundColor: isSaving ? 'var(--color-primary)' : 'var(--color-primary)',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                      }
+                    }}
+                  >
+                    <FileText className="h-4 w-4" />
+                    {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                  </Button>
+                )}
+                {selectedCount > 0 && (
+                  <Button
+                    onClick={handleGenerateSeals}
+                    disabled={isSaving}
+                    variant={mode === 'edit' ? 'outline' : 'default'}
+                    className="gap-2 transition-all hover:scale-105 disabled:bg-neutral-300 disabled:hover:scale-100"
+                    style={
+                      mode === 'edit'
+                        ? {
+                            borderColor: 'var(--color-primary)',
+                            color: 'var(--color-primary)',
+                          }
+                        : {
+                            backgroundColor: 'var(--color-primary)',
+                            color: 'white',
+                          }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!isSaving && mode === 'edit') {
+                        e.currentTarget.style.backgroundColor = 'var(--color-primary-light)'
+                      } else if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSaving && mode === 'edit') {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      } else if (!isSaving) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+                      }
+                    }}
+                  >
+                    <FileText className="h-4 w-4" />
+                    {isSaving ? 'Gerando...' : 'Gerar Selos'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -755,7 +755,7 @@ export function generateSealsPDF(sealData: SealData): jsPDF {
 export function printSeals(sealData: SealData): void {
   const html = generateSealsHtml(sealData)
   const printWindow = window.open('', '_blank')
-
+  
   if (!printWindow) {
     return
   }

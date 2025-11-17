@@ -3,7 +3,7 @@ import { Plus, Search } from 'lucide-react'
 
 interface TopBarProps {
   title: string
-  mode?: 'add' | 'search' | 'add-to-existing' | 'geral' | 'usuarios'
+  mode?: 'add' | 'search' | 'add-to-existing' | 'edit' | 'geral' | 'usuarios'
   type?: 'clients' | 'campaigns' | 'admin'
   onNovoCliente?: () => void
   onBuscarCliente?: () => void
@@ -16,11 +16,15 @@ export function TopBar({
   onNovoCliente,
   onBuscarCliente,
 }: TopBarProps) {
-  const newLabel = type === 'admin' ? 'Geral' : type === 'campaigns' ? 'Nova Campanha' : 'Novo Cliente'
+  const newLabel = type === 'admin' 
+    ? 'Geral' 
+    : type === 'campaigns' 
+      ? (mode === 'edit' ? 'Editar Campanha' : 'Nova Campanha')
+      : 'Novo Cliente'
   const searchLabel = type === 'admin' ? 'Usuários' : type === 'campaigns' ? 'Buscar Campanha' : 'Buscar Cliente'
   
-  // Considera 'add-to-existing' como 'add' para o propósito de destacar botões
-  const isAddMode = mode === 'add' || mode === 'add-to-existing' || mode === 'geral'
+  // Considera 'add-to-existing' e 'edit' como 'add' para o propósito de destacar botões
+  const isAddMode = mode === 'add' || mode === 'add-to-existing' || mode === 'edit' || mode === 'geral'
   const isSearchMode = mode === 'search' || mode === 'usuarios'
 
   return (
