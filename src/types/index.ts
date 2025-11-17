@@ -20,6 +20,9 @@ export interface CompanyData {
 export interface Company extends CompanyData {
   id: string
   
+  // Organização (multi-tenant)
+  organizationId: string
+  
   // Dados complementares
   phone?: string
   email?: string
@@ -79,6 +82,9 @@ export interface Campaign {
   sender: string
   observation: string
   instructions: CampaignInstructions
+  
+  // Organização (multi-tenant)
+  organizationId: string
   
   // Clientes vinculados (IDs do Firestore)
   companyIds: string[]

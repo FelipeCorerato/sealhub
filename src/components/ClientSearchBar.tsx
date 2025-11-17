@@ -12,14 +12,12 @@ import {
 interface ClientSearchBarProps {
   onSearchByName: (name: string) => void
   onSearchByCNPJ: (cnpj: string) => void
-  onListAll?: () => void
   isLoading?: boolean
 }
 
 export function ClientSearchBar({
   onSearchByName,
   onSearchByCNPJ,
-  onListAll,
   isLoading = false,
 }: ClientSearchBarProps) {
   const [nameValue, setNameValue] = useState('')
@@ -59,20 +57,7 @@ export function ClientSearchBar({
   const isNameValid = nameValue.trim().length >= 3
 
   return (
-    <div className="space-y-4">
-      {onListAll && (
-        <div className="flex justify-end">
-          <Button
-            onClick={onListAll}
-            disabled={isLoading}
-            variant="outline"
-            className="gap-2"
-          >
-            <Search className="h-4 w-4" />
-            Listar Todos os Clientes
-          </Button>
-        </div>
-      )}
+    <div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         {/* Busca por Nome */}
         <div className="flex-1">

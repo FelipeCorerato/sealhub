@@ -40,6 +40,7 @@ function timestampToDate(timestamp: Timestamp | Date | null | undefined): Date {
 function docToCompany(id: string, data: DocumentData): Company {
   return {
     id,
+    organizationId: data.organizationId,
     cnpj: data.cnpj,
     name: data.name,
     legalName: data.legalName,
@@ -158,11 +159,14 @@ export async function getCompanyById(id: string): Promise<Company | null> {
 }
 
 /**
- * Busca uma empresa por CNPJ
+ * Busca uma empresa por CNPJ dentro de uma organização
+ * @param cnpj - CNPJ da empresa
+ * @param organizationId - ID da organização
  */
-export async function getCompanyByCNPJ(cnpj: string): Promise<Company | null> {
+export async function getCompanyByCNPJ(cnpj: string, organizationId: string): Promise<Company | null> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     where('cnpj', '==', cnpj),
     limit(1),
   )
@@ -178,15 +182,18 @@ export async function getCompanyByCNPJ(cnpj: string): Promise<Company | null> {
 }
 
 /**
- * Busca empresas por nome (pesquisa parcial - case insensitive)
+ * Busca empresas por nome dentro de uma organização (pesquisa parcial - case insensitive)
+ * @param searchTerm - Termo de busca
+ * @param organizationId - ID da organização
  */
-export async function searchCompaniesByName(searchTerm: string): Promise<Company[]> {
+export async function searchCompaniesByName(searchTerm: string, organizationId: string): Promise<Company[]> {
   // Nota: Firestore não suporta busca case-insensitive nativamente
   // Esta implementação busca todas e filtra no cliente
   // Para produção, considere usar Algolia ou similar
   
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('name'),
   )
 
@@ -205,15 +212,18 @@ export async function searchCompaniesByName(searchTerm: string): Promise<Company
 }
 
 /**
- * Busca empresas por parte do CNPJ
+ * Busca empresas por parte do CNPJ dentro de uma organização
+ * @param cnpjPart - Parte do CNPJ para buscar
+ * @param organizationId - ID da organização
  */
-export async function searchCompaniesByCNPJ(cnpjPart: string): Promise<Company[]> {
+export async function searchCompaniesByCNPJ(cnpjPart: string, organizationId: string): Promise<Company[]> {
   // Remove formatação do CNPJ de busca
   const cleanedCnpjPart = cnpjPart.replace(/[^\d]/g, '')
   
   // Similar ao searchByName, busca todas e filtra no cliente
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('cnpj'),
   )
 
@@ -233,11 +243,13 @@ export async function searchCompaniesByCNPJ(cnpjPart: string): Promise<Company[]
 }
 
 /**
- * Lista todas as empresas
+ * Lista todas as empresas de uma organização
+ * @param organizationId - ID da organização
  */
-export async function getAllCompanies(): Promise<Company[]> {
+export async function getAllCompanies(organizationId: string): Promise<Company[]> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('name'),
   )
 
@@ -284,23 +296,30 @@ export async function deleteCompany(id: string): Promise<void> {
 }
 
 /**
- * Verifica se um CNPJ já está cadastrado
+ * Verifica se um CNPJ já está cadastrado em uma organização
+ * @param cnpj - CNPJ a verificar
+ * @param organizationId - ID da organização
  */
-export async function cnpjExists(cnpj: string): Promise<boolean> {
-  const company = await getCompanyByCNPJ(cnpj)
+export async function cnpjExists(cnpj: string, organizationId: string): Promise<boolean> {
+  const company = await getCompanyByCNPJ(cnpj, organizationId)
   return company !== null
 }
 
 /**
  * Cria ou atualiza uma empresa a partir de dados da Receita Federal
+ * @param receitaData - Dados da empresa vindos da Receita Federal
+ * @param userId - ID do usuário
+ * @param organizationId - ID da organização
+ * @param headquartersId - ID da matriz (opcional, para filiais)
  */
 export async function upsertCompanyFromReceita(
   receitaData: CompanyData,
   userId: string,
+  organizationId: string,
   headquartersId?: string,
 ): Promise<Company> {
-  // Verifica se já existe
-  const existing = await getCompanyByCNPJ(receitaData.cnpj)
+  // Verifica se já existe na organização
+  const existing = await getCompanyByCNPJ(receitaData.cnpj, organizationId)
 
   if (existing) {
     // Atualiza com os novos dados da Receita
@@ -322,6 +341,7 @@ export async function upsertCompanyFromReceita(
     // Cria novo
     const companyData = {
       ...receitaData,
+      organizationId,
       createdBy: userId,
       lastSyncedAt: new Date(),
     }
@@ -336,15 +356,17 @@ export async function upsertCompanyFromReceita(
  * @param matrizData - Dados da matriz
  * @param filiaisData - Array com dados das filiais a serem salvas
  * @param userId - ID do usuário que está salvando
+ * @param organizationId - ID da organização
  * @returns Array com matriz e filiais salvas
  */
 export async function saveMatrizAndBranches(
   matrizData: CompanyData,
   filiaisData: CompanyData[],
   userId: string,
+  organizationId: string,
 ): Promise<{ matriz: Company; filiais: Company[] }> {
   // 1. Salva a matriz primeiro
-  const matriz = await upsertCompanyFromReceita(matrizData, userId)
+  const matriz = await upsertCompanyFromReceita(matrizData, userId, organizationId)
   
   // 2. Salva todas as filiais, referenciando a matriz
   const filiais: Company[] = []
@@ -354,6 +376,7 @@ export async function saveMatrizAndBranches(
       const filial = await upsertCompanyFromReceita(
         filialData,
         userId,
+        organizationId,
         matriz.id // ID da matriz como referência
       )
       filiais.push(filial)
@@ -367,20 +390,22 @@ export async function saveMatrizAndBranches(
 }
 
 /**
- * Busca matriz e todas as filiais relacionadas a um CNPJ
+ * Busca matriz e todas as filiais relacionadas a um CNPJ dentro de uma organização
  * Se o CNPJ fornecido for de uma filial, busca a matriz e todas as outras filiais
  * Se o CNPJ fornecido for de uma matriz, busca a matriz e todas as filiais
  * 
  * @param cnpj - CNPJ da matriz ou de qualquer filial
+ * @param organizationId - ID da organização
  * @returns Array com empresas ordenadas: matriz primeiro, depois filiais
  */
-export async function searchRelatedCompanies(cnpj: string): Promise<Company[]> {
+export async function searchRelatedCompanies(cnpj: string, organizationId: string): Promise<Company[]> {
   // Extrai o número base (8 primeiros dígitos)
   const base = getCNPJBase(cnpj)
   
-  // Busca todas as empresas
+  // Busca todas as empresas da organização
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('cnpj'),
   )
 

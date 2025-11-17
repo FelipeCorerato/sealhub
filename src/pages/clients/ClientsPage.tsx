@@ -6,6 +6,8 @@ import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ResultsTable } from '@/components/ResultsTable'
 import { FooterBar } from '@/components/FooterBar'
 import { CompanyEditForm } from '@/components/CompanyEditForm'
+import { Button } from '@/components/ui/button'
+import { Search } from 'lucide-react'
 import type { Company, CompanyData } from '@/types'
 import { validateCNPJDigits, fetchRelatedCNPJs } from '@/lib/cnpj-api'
 import {
@@ -16,6 +18,7 @@ import {
 } from '@/lib/firebase/companies'
 import { isHeadquarters } from '@/lib/cnpj'
 import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -24,6 +27,7 @@ type PageMode = 'add' | 'search'
 
 export function ClientsPage() {
   const { user } = useAuth()
+  const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
   const [mode, setMode] = useState<PageMode>('add')
   const [companies, setCompanies] = useState<Company[]>([])
@@ -64,8 +68,15 @@ export function ClientsPage() {
           return
         }
 
+        if (!organization) {
+          toast.error('Erro na busca', {
+            description: 'Organização não encontrada.',
+          })
+          return
+        }
+
         // Busca também empresas relacionadas já cadastradas no banco de dados
-        const existingRelated = await searchRelatedCompanies(cnpj)
+        const existingRelated = await searchRelatedCompanies(cnpj, organization.id)
         
         // Busca na API da Receita Federal
         const relatedData = await fetchRelatedCNPJs(cnpj)
@@ -123,7 +134,14 @@ export function ClientsPage() {
         }
       } else {
         // Modo "search" busca empresas relacionadas no Firestore
-        const results = await searchRelatedCompanies(cnpj)
+        if (!organization) {
+          toast.error('Erro na busca', {
+            description: 'Organização não encontrada.',
+          })
+          return
+        }
+        
+        const results = await searchRelatedCompanies(cnpj, organization.id)
         setCompanies(results)
         
         // No modo search não precisa selecionar filiais (já estão todas cadastradas)
@@ -165,8 +183,15 @@ export function ClientsPage() {
     resetEditForm()
     
     try {
+      if (!organization) {
+        toast.error('Erro na busca', {
+          description: 'Organização não encontrada.',
+        })
+        return
+      }
+      
       // Busca no Firestore
-      const results = await searchCompaniesByName(name)
+      const results = await searchCompaniesByName(name, organization.id)
       setCompanies(results)
       
       if (results.length === 0) {
@@ -188,6 +213,13 @@ export function ClientsPage() {
   }
 
   const handleListAll = async () => {
+    if (!organization) {
+      toast.error('Erro ao listar', {
+        description: 'Organização não encontrada.',
+      })
+      return
+    }
+    
     setIsLoading(true)
     setSelectedCompany(undefined)
     setSelectedBranchCNPJs(new Set())
@@ -195,7 +227,7 @@ export function ClientsPage() {
     
     try {
       const { getAllCompanies } = await import('@/lib/firebase/companies')
-      const results = await getAllCompanies()
+      const results = await getAllCompanies(organization.id)
       setCompanies(results)
       
       if (results.length === 0) {
@@ -307,8 +339,15 @@ export function ClientsPage() {
         }))
         
         // Salva matriz e filiais com relacionamento
+        if (!organization) {
+          toast.error('Erro ao salvar empresas', {
+            description: 'Organização não encontrada.',
+          })
+          return
+        }
+        
         const { matriz: savedMatriz, filiais: savedFiliais } = 
-          await saveMatrizAndBranches(matrizData, filiaisData, user.id)
+          await saveMatrizAndBranches(matrizData, filiaisData, user.id, organization.id)
         
         toast.success('Empresas salvas com sucesso!', {
           description: `${savedMatriz.name} e ${savedFiliais.length} filial(is) foram adicionadas.`,
@@ -406,31 +445,48 @@ export function ClientsPage() {
           />
 
           <div className="rounded-2xl bg-white p-6 shadow-sm transition-all duration-300">
-            <h3 className="mb-4 text-lg font-semibold text-neutral-800">
-              {pageTitle}
-            </h3>
-            <div className="transition-opacity duration-300">
-              {mode === 'add' ? (
-                <div className="flex items-end gap-3">
-                  <div className="flex-1">
-                    <label className="mb-2 block text-sm font-medium text-neutral-700">
-                      Buscar CNPJ *
-                    </label>
-                    <SearchCNPJ
-                      onSearch={handleSearchByCNPJ}
-                      isLoading={isLoading}
-                    />
+            {mode === 'add' ? (
+              <>
+                <h3 className="mb-4 text-lg font-semibold text-neutral-800">
+                  {pageTitle}
+                </h3>
+                <div className="transition-opacity duration-300">
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1">
+                      <label className="mb-2 block text-sm font-medium text-neutral-700">
+                        Buscar CNPJ *
+                      </label>
+                      <SearchCNPJ
+                        onSearch={handleSearchByCNPJ}
+                        isLoading={isLoading}
+                      />
+                    </div>
                   </div>
                 </div>
-              ) : (
+              </>
+            ) : (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-neutral-800">
+                    {pageTitle}
+                  </h3>
+                  <Button
+                    onClick={handleListAll}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Listar Todos os Clientes
+                  </Button>
+                </div>
                 <ClientSearchBar
                   onSearchByName={handleSearchByName}
                   onSearchByCNPJ={handleSearchByCNPJ}
-                  onListAll={handleListAll}
                   isLoading={isLoading}
                 />
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           <ResultsTable
