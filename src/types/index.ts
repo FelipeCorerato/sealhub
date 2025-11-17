@@ -1,6 +1,9 @@
 export type Status = 'active' | 'closed' | 'suspended'
 export type CompanyType = 'headquarters' | 'branch'
 
+// ===== ORGANIZATION TYPES =====
+export * from './organization'
+
 // ===== COMPANY TYPES =====
 
 // Dados básicos da empresa (vindo da API da Receita)
@@ -16,6 +19,9 @@ export interface CompanyData {
 // Empresa completa no banco de dados (com metadados)
 export interface Company extends CompanyData {
   id: string
+  
+  // Organização (multi-tenant)
+  organizationId: string
   
   // Dados complementares
   phone?: string
@@ -76,6 +82,9 @@ export interface Campaign {
   sender: string
   observation: string
   instructions: CampaignInstructions
+  
+  // Organização (multi-tenant)
+  organizationId: string
   
   // Clientes vinculados (IDs do Firestore)
   companyIds: string[]

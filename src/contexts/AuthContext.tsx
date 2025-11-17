@@ -228,14 +228,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Enviar email de verificação
       try {
         await sendEmailVerification(userCredential.user)
-        toast.success('Conta criada com sucesso!', {
+      toast.success('Conta criada com sucesso!', {
           description: 'Enviamos um email de verificação para você.',
         })
       } catch (emailError) {
         console.error('Erro ao enviar email de verificação:', emailError)
         toast.warning('Conta criada!', {
           description: 'Mas não foi possível enviar o email de verificação.',
-        })
+      })
       }
 
       navigate('/verificar-email')

@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Loader2 } from 'lucide-react'
 
 interface PrivateRouteProps {
@@ -7,10 +8,11 @@ interface PrivateRouteProps {
 }
 
 export function PrivateRoute({ children }: PrivateRouteProps) {
-  const { isAuthenticated, isLoading, isEmailVerified } = useAuth()
+  const { isAuthenticated, isLoading: isAuthLoading, isEmailVerified } = useAuth()
+  const { isAssociated, isLoading: isOrgLoading } = useOrganization()
 
-  // Mostra loading enquanto verifica autenticação
-  if (isLoading) {
+  // Mostra loading enquanto verifica autenticação e organização
+  if (isAuthLoading || isOrgLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#FAF6EF]">
         <div className="text-center">
@@ -29,6 +31,11 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
   // Redireciona para verificação de email se não verificado
   if (!isEmailVerified) {
     return <Navigate to="/verificar-email" replace />
+  }
+
+  // Redireciona para aguardando associação se não estiver associado
+  if (!isAssociated) {
+    return <Navigate to="/aguardando-associacao" replace />
   }
 
   // Renderiza o conteúdo protegido

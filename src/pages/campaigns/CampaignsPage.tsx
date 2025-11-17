@@ -7,7 +7,7 @@ import { ClientSelectionTable } from '@/components/ClientSelectionTable'
 import { CampaignSearchBar } from '@/components/CampaignSearchBar'
 import { CampaignResultsTable } from '@/components/CampaignResultsTable'
 import { Button } from '@/components/ui/button'
-import { FileText, Plus } from 'lucide-react'
+import { FileText, Plus, Search } from 'lucide-react'
 import type { Company, CampaignInstructions } from '@/types'
 import {
   searchCompaniesByName,
@@ -24,6 +24,7 @@ import {
 } from '@/lib/firebase/campaigns'
 import { getUserProfiles, type UserProfile } from '@/lib/firebase/users'
 import { useAuth } from '@/contexts/AuthContext'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -31,6 +32,7 @@ import { printSeals } from '@/lib/seal-generator'
 
 export function CampaignsPage() {
   const { user } = useAuth()
+  const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
   const [mode, setMode] = useState<'add' | 'search' | 'add-to-existing'>('add')
   
@@ -59,9 +61,11 @@ export function CampaignsPage() {
   const [userProfiles, setUserProfiles] = useState<Map<string, UserProfile>>(new Map())
 
   const handleSearchByCNPJ = async (cnpj: string) => {
+    if (!organization) return
+    
     setIsLoading(true)
     try {
-      const results = await searchCompaniesByCNPJ(cnpj)
+      const results = await searchCompaniesByCNPJ(cnpj, organization.id)
       setCompanies(results)
       
       if (results.length === 0) {
@@ -83,9 +87,11 @@ export function CampaignsPage() {
   }
 
   const handleSearchByName = async (name: string) => {
+    if (!organization) return
+    
     setIsLoading(true)
     try {
-      const results = await searchCompaniesByName(name)
+      const results = await searchCompaniesByName(name, organization.id)
       setCompanies(results)
       
       if (results.length === 0) {
@@ -107,9 +113,11 @@ export function CampaignsPage() {
   }
 
   const handleListAll = async () => {
+    if (!organization) return
+    
     setIsLoading(true)
     try {
-      const results = await getAllCompanies()
+      const results = await getAllCompanies(organization.id)
       setCompanies(results)
       
       if (results.length === 0) {
@@ -246,11 +254,19 @@ export function CampaignsPage() {
         handleListAllCampaigns()
       } else {
         // Cria uma nova campanha
+        if (!organization) {
+          toast.error('Erro ao criar campanha', {
+            description: 'Organização não encontrada.',
+          })
+          return
+        }
+        
         const campaign = await createCampaign({
           name: campaignName,
           sender,
           observation,
           instructions,
+          organizationId: organization.id,
           companyIds: Array.from(selectedIds),
           status: 'active',
           createdBy: user.id,
@@ -327,9 +343,11 @@ export function CampaignsPage() {
 
   // Handlers para busca de campanhas
   const handleSearchByCampaignName = async (name: string) => {
+    if (!organization) return
+    
     setIsSearching(true)
     try {
-      const results = await searchCampaignsWithCompaniesByName(name)
+      const results = await searchCampaignsWithCompaniesByName(name, organization.id)
       setSearchResults(results)
 
       if (results.length === 0) {
@@ -351,9 +369,11 @@ export function CampaignsPage() {
   }
 
   const handleSearchByClientName = async (name: string) => {
+    if (!organization) return
+    
     setIsSearching(true)
     try {
-      const results = await searchCampaignsByCompanyName(name)
+      const results = await searchCampaignsByCompanyName(name, organization.id)
       setSearchResults(results)
 
       if (results.length === 0) {
@@ -375,9 +395,11 @@ export function CampaignsPage() {
   }
 
   const handleListAllCampaigns = async () => {
+    if (!organization) return
+    
     setIsSearching(true)
     try {
-      const results = await getAllCampaignsWithCompanies()
+      const results = await getAllCampaignsWithCompanies(organization.id)
       setSearchResults(results)
 
       if (results.length === 0) {
@@ -553,13 +575,23 @@ export function CampaignsPage() {
 
               {/* Procurar Cliente */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-neutral-800">
-                  {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
-                </h3>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-neutral-800">
+                    {mode === 'add-to-existing' ? 'Selecionar Novos Clientes' : 'Selecionar Clientes'}
+                  </h3>
+                  <Button
+                    onClick={handleListAll}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Listar Todos os Clientes
+                  </Button>
+                </div>
                 <ClientSearchBar
                   onSearchByName={handleSearchByName}
                   onSearchByCNPJ={handleSearchByCNPJ}
-                  onListAll={handleListAll}
                   isLoading={isLoading}
                 />
               </div>
@@ -575,13 +607,23 @@ export function CampaignsPage() {
             <>
               {/* Procurar Campanha */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-neutral-800">
-                  Procurar Campanha
-                </h3>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-neutral-800">
+                    Procurar Campanha
+                  </h3>
+                  <Button
+                    onClick={handleListAllCampaigns}
+                    disabled={isSearching}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Listar Todas as Campanhas
+                  </Button>
+                </div>
                 <CampaignSearchBar
                   onSearchByCampaignName={handleSearchByCampaignName}
                   onSearchByClientName={handleSearchByClientName}
-                  onListAll={handleListAllCampaigns}
                   isLoading={isSearching}
                 />
               </div>

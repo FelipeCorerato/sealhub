@@ -1,0 +1,167 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===== HELPER FUNCTIONS =====
+    
+    // Verifica se o usuário é membro ativo de uma organização
+    // Usa ID previsível: userId_organizationId
+    function isMemberOf(orgId) {
+      let memberId = request.auth.uid + '_' + orgId;
+      return exists(/databases/$(database)/documents/organizationMembers/$(memberId))
+        && get(/databases/$(database)/documents/organizationMembers/$(memberId)).data.status == 'active';
+    }
+    
+    // Verifica se o usuário é admin de uma organização
+    function isAdminOf(orgId) {
+      return exists(/databases/$(database)/documents/organizations/$(orgId))
+        && request.auth.uid in get(/databases/$(database)/documents/organizations/$(orgId)).data.adminUsers;
+    }
+    
+    // Verifica se o email tem domínio permitido
+    function hasAllowedEmailDomain() {
+      // Lista de domínios permitidos - atualize conforme necessário
+      return request.auth.token.email.matches('.*@iasabrasil\\.com\\.br$');
+    }
+    
+    // ===== ORGANIZATIONS =====
+    match /organizations/{organizationId} {
+      // Qualquer usuário autenticado pode ler organizações ativas
+      allow read: if request.auth != null 
+        && resource.data.status == 'active';
+      
+      // Apenas admins da organização podem atualizar
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.adminUsers
+        && request.resource.data.adminUsers == resource.data.adminUsers; // Não pode alterar lista de admins por esta regra
+      
+      // Super-admins podem criar (ajuste conforme necessário)
+      allow create: if request.auth != null
+        && hasAllowedEmailDomain();
+      
+      // Não permitir deletar
+      allow delete: if false;
+    }
+    
+    // ===== ORGANIZATION MEMBERS =====
+    match /organizationMembers/{memberId} {
+      // Qualquer usuário autenticado pode ler (para queries de getUserOrganization)
+      // A query já filtra por userId, então só retorna dados do próprio usuário
+      allow read: if request.auth != null;
+      
+      // Admins podem adicionar membros
+      allow create: if request.auth != null
+        && isAdminOf(request.resource.data.organizationId)
+        && request.resource.data.status in ['active', 'invited']
+        && request.resource.data.userId is string
+        && request.resource.data.organizationId is string;
+      
+      // Admins podem atualizar membros
+      allow update: if request.auth != null
+        && isAdminOf(resource.data.organizationId);
+      
+      // Admins podem remover membros (marcar como inactive)
+      allow delete: if request.auth != null
+        && isAdminOf(resource.data.organizationId);
+    }
+    
+    // ===== COMPANIES (Clientes) =====
+    match /companies/{companyId} {
+      // Membros da organização podem ler
+      allow read: if request.auth != null
+        && isMemberOf(resource.data.organizationId);
+      
+      // Membros podem criar (com organizationId)
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.organizationId is string
+        && isMemberOf(request.resource.data.organizationId)
+        && request.resource.data.cnpj is string
+        && request.resource.data.name is string
+        && request.resource.data.address is string
+        && request.resource.data.type in ['headquarters', 'branch']
+        && request.resource.data.status in ['active', 'closed', 'suspended'];
+      
+      // Membros podem atualizar (não pode mudar organizationId)
+      allow update: if request.auth != null
+        && isMemberOf(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId
+        && request.resource.data.cnpj == resource.data.cnpj; // CNPJ não pode mudar
+      
+      // Apenas criador ou admin pode deletar
+      allow delete: if request.auth != null
+        && isMemberOf(resource.data.organizationId)
+        && (resource.data.createdBy == request.auth.uid || isAdminOf(resource.data.organizationId));
+    }
+    
+    // ===== CAMPAIGNS =====
+    match /campaigns/{campaignId} {
+      // Membros da organização podem ler
+      allow read: if request.auth != null
+        && isMemberOf(resource.data.organizationId);
+      
+      // Membros podem criar
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.organizationId is string
+        && isMemberOf(request.resource.data.organizationId)
+        && request.resource.data.name is string
+        && request.resource.data.sender is string
+        && request.resource.data.observation is string
+        && request.resource.data.status in ['draft', 'active', 'completed', 'cancelled'];
+      
+      // Membros podem atualizar (não pode mudar organizationId)
+      allow update: if request.auth != null
+        && isMemberOf(resource.data.organizationId)
+        && request.resource.data.organizationId == resource.data.organizationId
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.createdBy == resource.data.createdBy; // createdBy não pode mudar
+      
+      // Apenas criador pode deletar
+      allow delete: if request.auth != null
+        && isMemberOf(resource.data.organizationId)
+        && resource.data.createdBy == request.auth.uid;
+    }
+    
+    // ===== CAMPAIGN_CLIENTS (Futuro) =====
+    match /campaignClients/{campaignClientId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+    
+    // ===== SEALS (Futuro) =====
+    match /seals/{sealId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+    
+    // ===== USERS (Perfis de Usuários) =====
+    match /users/{userId} {
+      // Usuário pode ler seu próprio perfil
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+      
+      // Membros da mesma organização podem ler perfis
+      allow read: if request.auth != null
+        && exists(/databases/$(database)/documents/users/$(userId))
+        && resource.data.currentOrganizationId is string
+        && isMemberOf(resource.data.currentOrganizationId);
+      
+      // Apenas o próprio usuário pode criar/atualizar seu perfil
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true
+        && hasAllowedEmailDomain();
+      
+      // Ninguém pode deletar perfis de usuários
+      allow delete: if false;
+    }
+  }
+}
+

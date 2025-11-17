@@ -1,6 +1,7 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { SidebarProvider } from '@/contexts/SidebarContext'
@@ -16,8 +17,10 @@ export function Providers({ children }: ProvidersProps) {
         <ThemeProvider>
           <SidebarProvider>
             <AuthProvider>
+              <OrganizationProvider>
               {children}
               <Toaster position="top-right" style={{ zIndex: 'var(--z-toast)' }} />
+              </OrganizationProvider>
             </AuthProvider>
           </SidebarProvider>
         </ThemeProvider>

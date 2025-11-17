@@ -6,14 +6,12 @@ import { Search, Loader2 } from 'lucide-react'
 interface CampaignSearchBarProps {
   onSearchByCampaignName: (name: string) => void
   onSearchByClientName: (name: string) => void
-  onListAll: () => void
   isLoading?: boolean
 }
 
 export function CampaignSearchBar({
   onSearchByCampaignName,
   onSearchByClientName,
-  onListAll,
   isLoading = false,
 }: CampaignSearchBarProps) {
   const [campaignNameSearch, setCampaignNameSearch] = useState('')
@@ -47,20 +45,7 @@ export function CampaignSearchBar({
   const isClientNameValid = clientNameSearch.trim().length >= 3
 
   return (
-    <div className="space-y-4">
-      {/* Botão Listar Todas no topo */}
-      <div className="flex justify-end">
-        <Button
-          onClick={onListAll}
-          disabled={isLoading}
-          variant="outline"
-          className="gap-2"
-        >
-          <Search className="h-4 w-4" />
-          Listar Todas as Campanhas
-        </Button>
-      </div>
-
+    <div>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         {/* Buscar por nome da campanha */}
         <div className="flex-1">

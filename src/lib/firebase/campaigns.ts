@@ -43,6 +43,7 @@ function docToCampaign(id: string, data: DocumentData): Campaign {
     sender: data.sender,
     observation: data.observation,
     instructions: data.instructions,
+    organizationId: data.organizationId,
     companyIds: data.companyIds || [],
     status: data.status,
     createdAt: timestampToDate(data.createdAt),
@@ -96,10 +97,13 @@ export async function getCampaignById(id: string): Promise<Campaign | null> {
 
 /**
  * Busca campanhas por nome (pesquisa parcial - case insensitive)
+ * @param searchTerm - Termo de busca
+ * @param organizationId - ID da organização
  */
-export async function searchCampaignsByName(searchTerm: string): Promise<Campaign[]> {
+export async function searchCampaignsByName(searchTerm: string, organizationId: string): Promise<Campaign[]> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('name'),
   )
 
@@ -119,10 +123,13 @@ export async function searchCampaignsByName(searchTerm: string): Promise<Campaig
 
 /**
  * Busca campanhas por status
+ * @param status - Status da campanha
+ * @param organizationId - ID da organização
  */
-export async function getCampaignsByStatus(status: string): Promise<Campaign[]> {
+export async function getCampaignsByStatus(status: string, organizationId: string): Promise<Campaign[]> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     where('status', '==', status),
     orderBy('createdAt', 'desc'),
   )
@@ -138,11 +145,13 @@ export async function getCampaignsByStatus(status: string): Promise<Campaign[]> 
 }
 
 /**
- * Lista todas as campanhas
+ * Lista todas as campanhas de uma organização
+ * @param organizationId - ID da organização
  */
-export async function getAllCampaigns(): Promise<Campaign[]> {
+export async function getAllCampaigns(organizationId: string): Promise<Campaign[]> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     orderBy('createdAt', 'desc'),
   )
 
@@ -241,11 +250,14 @@ export async function addCompaniesToCampaign(
 }
 
 /**
- * Busca campanhas de um usuário específico
+ * Busca campanhas de um usuário específico dentro de uma organização
+ * @param userId - ID do usuário
+ * @param organizationId - ID da organização
  */
-export async function getCampaignsByUser(userId: string): Promise<Campaign[]> {
+export async function getCampaignsByUser(userId: string, organizationId: string): Promise<Campaign[]> {
   const q = query(
     collection(db, COLLECTION_NAME),
+    where('organizationId', '==', organizationId),
     where('createdBy', '==', userId),
     orderBy('createdAt', 'desc'),
   )
@@ -294,11 +306,14 @@ async function populateCampaignCompanies(
 
 /**
  * Busca campanhas por nome com clientes populados
+ * @param searchTerm - Termo de busca
+ * @param organizationId - ID da organização
  */
 export async function searchCampaignsWithCompaniesByName(
   searchTerm: string,
+  organizationId: string,
 ): Promise<CampaignWithCompanies[]> {
-  const campaigns = await searchCampaignsByName(searchTerm)
+  const campaigns = await searchCampaignsByName(searchTerm, organizationId)
   const campaignsWithCompanies: CampaignWithCompanies[] = []
 
   for (const campaign of campaigns) {
@@ -311,12 +326,15 @@ export async function searchCampaignsWithCompaniesByName(
 
 /**
  * Busca campanhas por nome do cliente
+ * @param companyNameSearch - Nome do cliente a buscar
+ * @param organizationId - ID da organização
  */
 export async function searchCampaignsByCompanyName(
   companyNameSearch: string,
+  organizationId: string,
 ): Promise<CampaignWithCompanies[]> {
-  // Busca todas as campanhas
-  const allCampaigns = await getAllCampaigns()
+  // Busca todas as campanhas da organização
+  const allCampaigns = await getAllCampaigns(organizationId)
   const normalizedSearch = companyNameSearch.toLowerCase()
   const matchingCampaigns: CampaignWithCompanies[] = []
 
@@ -337,12 +355,13 @@ export async function searchCampaignsByCompanyName(
 }
 
 /**
- * Lista todas as campanhas com clientes populados
+ * Lista todas as campanhas com clientes populados de uma organização
+ * @param organizationId - ID da organização
  */
-export async function getAllCampaignsWithCompanies(): Promise<
+export async function getAllCampaignsWithCompanies(organizationId: string): Promise<
   CampaignWithCompanies[]
 > {
-  const campaigns = await getAllCampaigns()
+  const campaigns = await getAllCampaigns(organizationId)
   const campaignsWithCompanies: CampaignWithCompanies[] = []
 
   for (const campaign of campaigns) {

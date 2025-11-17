@@ -9,7 +9,8 @@
 export const ALLOWED_EMAIL_DOMAINS = [
   '@iasabrasil.com.br',
   // Adicione novos domínios corporativos abaixo:
-  // '@outrodominio.com',
+  '@gmail.com',
+  '@usp.br',
 ] as const
 
 /**

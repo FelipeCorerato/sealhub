@@ -3,8 +3,8 @@ import { Plus, Search } from 'lucide-react'
 
 interface TopBarProps {
   title: string
-  mode?: 'add' | 'search' | 'add-to-existing'
-  type?: 'clients' | 'campaigns'
+  mode?: 'add' | 'search' | 'add-to-existing' | 'geral' | 'usuarios'
+  type?: 'clients' | 'campaigns' | 'admin'
   onNovoCliente?: () => void
   onBuscarCliente?: () => void
 }
@@ -16,25 +16,25 @@ export function TopBar({
   onNovoCliente,
   onBuscarCliente,
 }: TopBarProps) {
-  const newLabel = type === 'campaigns' ? 'Nova Campanha' : 'Novo Cliente'
-  const searchLabel =
-    type === 'campaigns' ? 'Buscar Campanha' : 'Buscar Cliente'
+  const newLabel = type === 'admin' ? 'Geral' : type === 'campaigns' ? 'Nova Campanha' : 'Novo Cliente'
+  const searchLabel = type === 'admin' ? 'Usuários' : type === 'campaigns' ? 'Buscar Campanha' : 'Buscar Cliente'
   
   // Considera 'add-to-existing' como 'add' para o propósito de destacar botões
-  const isAddMode = mode === 'add' || mode === 'add-to-existing'
+  const isAddMode = mode === 'add' || mode === 'add-to-existing' || mode === 'geral'
+  const isSearchMode = mode === 'search' || mode === 'usuarios'
 
   return (
     <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
       <h2 className="text-lg font-semibold text-neutral-800 sm:text-xl">{title}</h2>
       <div className="flex gap-2 sm:gap-3">
         <Button
-          variant={mode === 'search' ? 'default' : 'outline'}
+          variant={isSearchMode ? 'default' : 'outline'}
           onClick={onBuscarCliente}
           className="gap-2"
           title={searchLabel}
           aria-label={searchLabel}
           style={
-            mode === 'search'
+            isSearchMode
               ? {
                   backgroundColor: 'var(--color-primary)',
                   color: 'white',
@@ -42,19 +42,19 @@ export function TopBar({
               : undefined
           }
           onMouseEnter={(e) => {
-            if (mode === 'search') {
+            if (isSearchMode) {
               e.currentTarget.style.backgroundColor =
                 'var(--color-primary-hover)'
             }
           }}
           onMouseLeave={(e) => {
-            if (mode === 'search') {
+            if (isSearchMode) {
               e.currentTarget.style.backgroundColor = 'var(--color-primary)'
             }
           }}
         >
-          <Search className="h-4 w-4" />
-          <span className="hidden sm:inline">{searchLabel}</span>
+          {type !== 'admin' && <Search className="h-4 w-4" />}
+          <span className={type === 'admin' ? '' : 'hidden sm:inline'}>{searchLabel}</span>
         </Button>
         <Button
           variant={isAddMode ? 'default' : 'outline'}
@@ -82,8 +82,8 @@ export function TopBar({
             }
           }}
         >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">{newLabel}</span>
+          {type !== 'admin' && <Plus className="h-4 w-4" />}
+          <span className={type === 'admin' ? '' : 'hidden sm:inline'}>{newLabel}</span>
         </Button>
       </div>
     </div>
