@@ -90,6 +90,7 @@ export function ClientsPage() {
         const tempCompanies: Company[] = relatedData.map((data) => ({
           ...data,
           id: 'temp-' + data.cnpj,
+          organizationId: organization.id,
           createdAt: new Date(),
           createdBy: user?.id || '',
           updatedAt: new Date(),

@@ -3,7 +3,8 @@
  * Gerencia a organização atual do usuário e suas configurações
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import { getUserOrganization } from '@/lib/firebase/organizations'
 import type { Organization } from '@/types/organization'

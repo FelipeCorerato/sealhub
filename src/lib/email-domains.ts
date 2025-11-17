@@ -6,12 +6,12 @@
  * 2. Exemplo: '@novodominio.com.br'
  */
 
-export const ALLOWED_EMAIL_DOMAINS = [
+export const ALLOWED_EMAIL_DOMAINS: readonly string[] = [
   '@iasabrasil.com.br',
   // Adicione novos domínios corporativos abaixo:
   '@gmail.com',
   '@usp.br',
-] as const
+]
 
 /**
  * Valida se o email possui um domínio permitido
