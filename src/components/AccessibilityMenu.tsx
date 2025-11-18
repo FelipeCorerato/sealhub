@@ -8,9 +8,53 @@ import {
   Minus,
   Plus,
   RotateCcw,
-  Accessibility,
   X,
 } from 'lucide-react'
+
+function AccessibilityIcon({ size = '1.75em' }: { size?: string | number }) {
+  const sizeValue = typeof size === 'number' ? `${size}px` : size
+  return (
+    <svg
+      width={sizeValue}
+      height={sizeValue}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={{ fontSize: 'inherit' }}
+    >
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      {/* Figura humana estilizada - cabeça, corpo, braços e pernas */}
+      <path
+        d="M12 7.5C12.8284 7.5 13.5 6.82843 13.5 6C13.5 5.17157 12.8284 4.5 12 4.5C11.1716 4.5 10.5 5.17157 10.5 6C10.5 6.82843 11.1716 7.5 12 7.5Z"
+        fill="currentColor"
+      />
+      <path
+        d="M8.5 9.5C8.5 9.5 9.5 10.5 12 10.5C14.5 10.5 15.5 9.5 15.5 9.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <path
+        d="M12 10.5V16"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M12 16L10 18.5M12 16L14 18.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  )
+}
 
 export function AccessibilityMenu() {
   const [isOpen, setIsOpen] = useState(false)
@@ -82,7 +126,7 @@ export function AccessibilityMenu() {
         aria-label="Menu de Acessibilidade"
         title="Menu de Acessibilidade"
       >
-        <Accessibility size={24} />
+        <AccessibilityIcon size="2em" />
       </button>
 
       {/* Menu Panel */}
@@ -100,7 +144,7 @@ export function AccessibilityMenu() {
             {/* Header */}
             <div className="accessibility-menu-header">
               <div className="accessibility-menu-title">
-                <Accessibility size={20} />
+                <AccessibilityIcon size="1.5em" />
                 <h2>Acessibilidade</h2>
               </div>
               <button

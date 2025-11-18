@@ -16,6 +16,7 @@
   justify-content: center;
   transition: all 0.3s ease;
   z-index: var(--z-floating-button);
+  font-size: 1rem; /* Permite que o ícone responda ao tamanho da fonte do sistema */
 }
 
 .accessibility-floating-button:hover {
