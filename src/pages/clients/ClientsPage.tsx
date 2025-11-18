@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { TopBar } from '@/components/TopBar'
 import { SearchCNPJ } from '@/components/SearchCNPJ'
@@ -7,6 +7,13 @@ import { ResultsTable } from '@/components/ResultsTable'
 import { FooterBar } from '@/components/FooterBar'
 import { CompanyEditForm } from '@/components/CompanyEditForm'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Search } from 'lucide-react'
 import type { Company, CompanyData } from '@/types'
 import { validateCNPJDigits, fetchRelatedCNPJs } from '@/lib/cnpj-api'
@@ -36,20 +43,13 @@ export function ClientsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ name: '', address: '' })
-  const editFormRef = useRef<HTMLDivElement | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const resetEditForm = () => {
     setEditingCompanyId(null)
     setEditForm({ name: '', address: '' })
+    setIsEditDialogOpen(false)
   }
-
-  useEffect(() => {
-    if (mode === 'search' && editingCompanyId) {
-      requestAnimationFrame(() => {
-        editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
-    }
-  }, [editingCompanyId, mode])
 
   const handleSearchByCNPJ = async (cnpj: string) => {
     setIsLoading(true)
@@ -292,6 +292,7 @@ export function ClientsPage() {
       name: company.name,
       address: company.address,
     })
+    setIsEditDialogOpen(true)
   }
 
   const handleSave = async () => {
@@ -392,6 +393,8 @@ export function ClientsPage() {
         toast.success('Cliente atualizado com sucesso!', {
           description: `${updatedCompany.name} foi atualizado.`,
         })
+        
+        setIsEditDialogOpen(false)
       }
     } catch (error) {
       console.error('Erro ao salvar empresas:', error)
@@ -501,30 +504,54 @@ export function ClientsPage() {
             onEditCompany={mode === 'search' ? handleEditCompany : undefined}
             mode={tableMode}
           />
-
-          {mode === 'search' && editingCompany && (
-            <div ref={editFormRef}>
-              <CompanyEditForm
-                name={editForm.name}
-                address={editForm.address}
-                cnpj={editingCompany.cnpj}
-                type={editingCompany.type}
-                onChange={handleEditFormChange}
-              />
-            </div>
-          )}
         </div>
-        <FooterBar
-          company={
-            mode === 'add'
-              ? companies.find(c => c.type === 'headquarters')
-              : editingCompany
-          }
-          selectedBranchesCount={mode === 'add' ? selectedBranchCNPJs.size : undefined}
-          mode={footerMode}
-          isLoading={isLoading}
-          onSave={handleSave}
-        />
+
+        {/* Dialog de Edição */}
+        {mode === 'search' && editingCompany && (
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Editar Cliente</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <CompanyEditForm
+                  name={editForm.name}
+                  address={editForm.address}
+                  cnpj={editingCompany.cnpj}
+                  type={editingCompany.type}
+                  onChange={handleEditFormChange}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+        {!(mode === 'search' && isEditDialogOpen) && (
+          <FooterBar
+            company={
+              mode === 'add'
+                ? companies.find(c => c.type === 'headquarters')
+                : editingCompany
+            }
+            selectedBranchesCount={mode === 'add' ? selectedBranchCNPJs.size : undefined}
+            mode={footerMode}
+            isLoading={isLoading}
+            onSave={handleSave}
+          />
+        )}
       </main>
     </div>
   )

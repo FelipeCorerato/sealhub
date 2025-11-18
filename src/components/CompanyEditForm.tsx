@@ -20,10 +20,9 @@ export function CompanyEditForm({
   onChange,
 }: CompanyEditFormProps) {
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm">
+    <div>
       <div className="mb-6">
-        <h4 className="text-lg font-semibold text-neutral-800">Editar Cliente</h4>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
+        <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
           <span className="font-mono text-base text-neutral-800">
             {formatCNPJ(cnpj)}
           </span>
@@ -31,7 +30,7 @@ export function CompanyEditForm({
             {companyTypeLabels[type]}
           </span>
         </div>
-        <p className="mt-3 text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500">
           Atualize o nome e o endereço do cliente selecionado.
         </p>
       </div>
