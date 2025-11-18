@@ -107,11 +107,7 @@ export function AccessibilityMenu() {
     resetAccessibility()
   }
 
-  // Calcula a posição do botão baseado na presença do footer
-  const buttonStyle = {
-    bottom: hasFooter ? '7rem' : '2rem',
-  }
-
+  // Calcula a posição do menu baseado na presença do footer
   const menuStyle = {
     bottom: hasFooter ? '11rem' : '6rem',
   }
@@ -122,7 +118,6 @@ export function AccessibilityMenu() {
       <button
         onClick={toggleMenu}
         className="accessibility-floating-button"
-        style={buttonStyle}
         aria-label="Menu de Acessibilidade"
         title="Menu de Acessibilidade"
       >

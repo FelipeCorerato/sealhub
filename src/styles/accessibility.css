@@ -1,8 +1,9 @@
 /* Floating Button */
 .accessibility-floating-button {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
@@ -21,12 +22,12 @@
 
 .accessibility-floating-button:hover {
   background-color: var(--color-primary-hover);
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .accessibility-floating-button:active {
-  transform: scale(1.05);
+  transform: translateY(-50%) scale(1.05);
 }
 
 /* Overlay */
@@ -1124,8 +1125,17 @@
   }
 
   .accessibility-floating-button {
-    bottom: 1.5rem;
-    right: 1.5rem;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+  }
+  
+  .accessibility-floating-button:hover {
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  .accessibility-floating-button:active {
+    transform: translateY(-50%) scale(1.05);
   }
 
   .accessibility-menu-content {

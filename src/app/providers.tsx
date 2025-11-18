@@ -19,7 +19,7 @@ export function Providers({ children }: ProvidersProps) {
             <AuthProvider>
               <OrganizationProvider>
               {children}
-              <Toaster position="top-right" style={{ zIndex: 'var(--z-toast)' }} />
+              <Toaster position="bottom-right" closeButton style={{ zIndex: 'var(--z-toast)' }} />
               </OrganizationProvider>
             </AuthProvider>
           </SidebarProvider>
