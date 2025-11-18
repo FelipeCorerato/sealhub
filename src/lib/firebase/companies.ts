@@ -79,6 +79,11 @@ function prepareCompanyData(
     createdBy: userId,
   }
   
+  // Adiciona organizationId se presente (obrigatório para multi-tenant)
+  if ('organizationId' in companyData && companyData.organizationId) {
+    baseData.organizationId = companyData.organizationId
+  }
+  
   // Adiciona campos opcionais que podem existir em Company
   if ('legalName' in companyData && companyData.legalName) {
     baseData.legalName = companyData.legalName
