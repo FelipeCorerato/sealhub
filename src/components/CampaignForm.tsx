@@ -107,37 +107,46 @@ export function CampaignForm({
 
       {/* Instruções de manuseio */}
       <div>
-        <label className="mb-3 block text-sm font-medium text-neutral-700">
+        <label className="mb-4 block text-base font-semibold text-neutral-700">
           Instruções de manuseio
         </label>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {instructionItems.map((item) => {
             const Icon = item.icon
+            const isChecked = instructions[item.key]
             return (
-              <div
+              <label
                 key={item.key}
-                className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3 transition-colors hover:bg-neutral-50"
+                htmlFor={item.key}
+                className={`group relative flex cursor-pointer flex-col items-center gap-3 rounded-lg border-2 p-5 transition-all hover:border-neutral-300 hover:shadow-md ${
+                  isChecked
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-sm'
+                    : 'border-neutral-200 bg-white'
+                }`}
               >
-                <Checkbox
-                  id={item.key}
-                  checked={instructions[item.key]}
-                  onCheckedChange={(checked) =>
-                    onInstructionChange(item.key, checked === true)
-                  }
-                  className="data-[state=checked]:bg-(--color-primary) data-[state=checked]:border-(--color-primary)"
-                />
-                <label
-                  htmlFor={item.key}
-                  className="flex flex-1 cursor-pointer items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-full transition-transform group-hover:scale-105 ${item.bgColor}`}
                 >
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full ${item.bgColor}`}
+                  <Icon className="h-9 w-9 text-white" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={item.key}
+                    checked={isChecked}
+                    onCheckedChange={(checked) =>
+                      onInstructionChange(item.key, checked === true)
+                    }
+                    className="data-[state=checked]:bg-[var(--color-primary)] data-[state=checked]:border-[var(--color-primary)]"
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      isChecked ? 'text-neutral-800' : 'text-neutral-700'
+                    }`}
                   >
-                    <Icon className={`h-5 w-5 text-white`} />
-                  </div>
-                  <span className="text-neutral-700">{item.label}</span>
-                </label>
-              </div>
+                    {item.label}
+                  </span>
+                </div>
+              </label>
             )
           })}
         </div>
