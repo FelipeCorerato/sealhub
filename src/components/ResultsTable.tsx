@@ -82,7 +82,7 @@ function CompanyGroup({
             }
           }}
           className={cn(
-            'group relative rounded-2xl border-2 border-[var(--color-primary)] bg-gradient-to-br from-[var(--color-primary)]/5 to-white p-6 shadow-lg transition-all hover:shadow-xl cursor-pointer',
+            'group relative rounded-2xl border-2 border-[var(--color-primary)] bg-white dark:bg-neutral-800 p-6 shadow-lg transition-all hover:shadow-xl cursor-pointer',
             selectedCompany?.cnpj === matriz.cnpj && 'ring-4 ring-[var(--color-primary)]/20',
           )}
         >
@@ -99,19 +99,19 @@ function CompanyGroup({
                 </div>
               </div>
 
-              <h3 className="mb-2 text-2xl font-bold text-neutral-900">
+              <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                 {matriz.name}
               </h3>
 
-              <div className="mb-4 space-y-2 text-sm text-neutral-600">
+              <div className="mb-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-semibold text-neutral-800">
+                  <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
                     {formatCNPJ(matriz.cnpj)}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400" />
-                  <span>{matriz.address}</span>
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  <span className="dark:text-neutral-300">{matriz.address}</span>
                 </div>
               </div>
 
@@ -133,9 +133,9 @@ function CompanyGroup({
 
       {/* Lista de Filiais */}
       {filiais.length > 0 && (
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h4 className="text-lg font-semibold text-neutral-800">
+            <h4 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
               Filiais ({filiais.length})
             </h4>
           </div>
@@ -152,24 +152,24 @@ function CompanyGroup({
                   }
                 }}
                 className={cn(
-                  'group relative flex items-start gap-4 rounded-xl border border-neutral-200 p-4 transition-all cursor-pointer hover:border-[var(--color-primary)]/30 hover:bg-neutral-50',
+                  'group relative flex items-start gap-4 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 transition-all cursor-pointer hover:border-[var(--color-primary)]/30 hover:bg-neutral-50 dark:hover:bg-neutral-700/50',
                 )}
               >
                 <div className="flex-1 min-w-0">
                   <div className="mb-2 flex items-center gap-3">
                     <div className="flex h-2 w-2 rounded-full bg-neutral-400 flex-shrink-0" />
-                    <h5 className="font-semibold text-neutral-900">
+                    <h5 className="font-semibold text-neutral-900 dark:text-neutral-100">
                       {filial.name}
                     </h5>
                   </div>
 
-                  <div className="ml-5 space-y-1 text-sm text-neutral-600">
-                    <div className="font-mono text-xs text-neutral-500">
+                  <div className="ml-5 space-y-1 text-sm text-neutral-600 dark:text-neutral-300">
+                    <div className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
                       {formatCNPJ(filial.cnpj)}
                     </div>
                     <div className="flex items-start gap-2">
-                      <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400" />
-                      <span className="text-xs">{filial.address}</span>
+                      <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                      <span className="text-xs dark:text-neutral-300">{filial.address}</span>
                     </div>
                   </div>
 
@@ -267,7 +267,7 @@ export function ResultsTable({
             }
           }}
           className={cn(
-            'group relative rounded-2xl border-2 border-[var(--color-primary)] bg-gradient-to-br from-[var(--color-primary)]/5 to-white p-6 shadow-lg transition-all hover:shadow-xl cursor-pointer',
+            'group relative rounded-2xl border-2 border-[var(--color-primary)] bg-white dark:bg-neutral-800 p-6 shadow-lg transition-all hover:shadow-xl cursor-pointer',
             selectedCompany?.cnpj === matriz.cnpj && 'ring-4 ring-[var(--color-primary)]/20',
           )}
         >
@@ -284,19 +284,19 @@ export function ResultsTable({
                 </div>
               </div>
 
-              <h3 className="mb-2 text-2xl font-bold text-neutral-900">
+              <h3 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                 {matriz.name}
               </h3>
 
-              <div className="mb-4 space-y-2 text-sm text-neutral-600">
+              <div className="mb-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-semibold text-neutral-800">
+                  <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
                     {formatCNPJ(matriz.cnpj)}
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400" />
-                  <span>{matriz.address}</span>
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  <span className="dark:text-neutral-300">{matriz.address}</span>
                 </div>
               </div>
 
@@ -318,9 +318,9 @@ export function ResultsTable({
 
       {/* Lista de Filiais com seleção */}
       {filiais.length > 0 && (
-        <div className="rounded-2xl bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h4 className="text-lg font-semibold text-neutral-800">
+            <h4 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
               Filiais ({filiais.length})
             </h4>
             {mode === 'add' && onSelectAllBranches && onDeselectAllBranches && (
@@ -364,7 +364,7 @@ export function ResultsTable({
                     }
                   }}
                   className={cn(
-                    'group relative flex items-start gap-4 rounded-xl border border-neutral-200 p-4 transition-all cursor-pointer hover:border-[var(--color-primary)]/30 hover:bg-neutral-50',
+                    'group relative flex items-start gap-4 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 transition-all cursor-pointer hover:border-[var(--color-primary)]/30 hover:bg-neutral-50 dark:hover:bg-neutral-700/50',
                     !isBranchChecked && 'opacity-60',
                   )}
                 >
@@ -387,25 +387,25 @@ export function ResultsTable({
                     <div className="mb-2 flex items-center gap-3">
                       <div className="flex h-2 w-2 rounded-full bg-neutral-400 flex-shrink-0" />
                       <h5 className={cn(
-                        'font-semibold text-neutral-900',
-                        !isBranchChecked && 'line-through text-neutral-500'
+                        'font-semibold text-neutral-900 dark:text-neutral-100',
+                        !isBranchChecked && 'line-through text-neutral-500 dark:text-neutral-600'
                       )}>
                         {filial.name}
                       </h5>
                     </div>
 
-                    <div className="ml-5 space-y-1 text-sm text-neutral-600">
+                    <div className="ml-5 space-y-1 text-sm text-neutral-600 dark:text-neutral-300">
                       <div className={cn(
                         'font-mono text-xs',
-                        isBranchChecked ? 'text-neutral-500' : 'text-neutral-400'
+                        isBranchChecked ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-400 dark:text-neutral-600'
                       )}>
                         {formatCNPJ(filial.cnpj)}
                       </div>
                       <div className="flex items-start gap-2">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400" />
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
                         <span className={cn(
                           'text-xs',
-                          !isBranchChecked && 'text-neutral-400'
+                          !isBranchChecked && 'text-neutral-400 dark:text-neutral-600'
                         )}>
                           {filial.address}
                         </span>
