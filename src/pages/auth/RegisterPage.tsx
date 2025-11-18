@@ -300,7 +300,7 @@ export function RegisterPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-neutral-600">
-          © 2025 VGSA - Gestão de Selos
+          © 2025 Gestão de Selos
         </p>
       </div>
     </div>

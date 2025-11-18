@@ -4,7 +4,6 @@ import { TopBar } from '@/components/TopBar'
 import { SearchCNPJ } from '@/components/SearchCNPJ'
 import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ResultsTable } from '@/components/ResultsTable'
-import { FooterBar } from '@/components/FooterBar'
 import { CompanyEditForm } from '@/components/CompanyEditForm'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Search } from 'lucide-react'
+import { Search, Save, Loader2 } from 'lucide-react'
 import type { Company, CompanyData } from '@/types'
 import { validateCNPJDigits, fetchRelatedCNPJs } from '@/lib/cnpj-api'
 import {
@@ -427,7 +426,6 @@ export function ClientsPage() {
 
   const pageTitle = mode === 'add' ? 'Adicionar Cliente' : 'Procurar Cliente'
   const tableMode = mode === 'search' ? 'edit' : mode
-  const footerMode = mode === 'search' ? 'edit' : mode
   const editingCompany = editingCompanyId
     ? companies.find((company) => company.id === editingCompanyId)
     : undefined
@@ -439,7 +437,7 @@ export function ClientsPage() {
         "transition-all duration-300",
         isCollapsed ? "lg:pl-20" : "lg:pl-64"
       )}>
-        <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
+        <div className="mx-auto max-w-7xl space-y-6 p-6 pb-6">
           <TopBar
             title="Painel de Clientes"
             type="clients"
@@ -539,18 +537,40 @@ export function ClientsPage() {
             </DialogContent>
           </Dialog>
         )}
-        {!(mode === 'search' && isEditDialogOpen) && (
-          <FooterBar
-            company={
-              mode === 'add'
-                ? companies.find(c => c.type === 'headquarters')
-                : editingCompany
-            }
-            selectedBranchesCount={mode === 'add' ? selectedBranchCNPJs.size : undefined}
-            mode={footerMode}
-            isLoading={isLoading}
-            onSave={handleSave}
-          />
+
+        {/* Botão de Salvar no modo add */}
+        {mode === 'add' && companies.length > 0 && (
+          <div className="fixed bottom-6 right-6 z-40">
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+              size="lg"
+              className="gap-2 shadow-lg text-white"
+              style={{
+                backgroundColor: 'var(--color-primary)',
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)'
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Salvar Clientes
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </main>
     </div>

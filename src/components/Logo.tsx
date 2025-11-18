@@ -21,7 +21,7 @@ export function Logo() {
       {/* Texto */}
       <div className="flex flex-col min-w-0 flex-1">
         <h1 className="text-xl font-bold text-neutral-800 whitespace-nowrap overflow-hidden text-ellipsis">
-          {organization ? `VGSA - ${organization.tradeName || organization.name}` : 'VGSA'}
+          {organization ? `${organization.tradeName || organization.name}` : 'VGSA'}
         </h1>
         <p className="text-xs text-neutral-600 whitespace-nowrap overflow-hidden text-ellipsis">
           Gestão de Selos

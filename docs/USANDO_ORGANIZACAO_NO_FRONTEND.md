@@ -101,7 +101,7 @@ function Header() {
   
   return (
     <header>
-      <h1>VGSA - {organization?.name}</h1>
+      <h1>{organization?.name}</h1>
     </header>
   )
 }
@@ -411,7 +411,7 @@ function Sidebar() {
         <Logo />
         {organization && (
           <p className="text-sm text-neutral-600">
-            VGSA - {organization.tradeName || organization.name}
+            {organization.tradeName || organization.name}
           </p>
         )}
       </div>

@@ -23,7 +23,7 @@ O Firebase oferece templates para:
 ### 1. Configurações Básicas
 
 ```
-Nome do Remetente: VGSA - Gestão de Selos
+Nome do Remetente: Gestão de Selos
 Email de Resposta: noreply@seudominio.com (configurável)
 ```
 
@@ -31,14 +31,14 @@ Email de Resposta: noreply@seudominio.com (configurável)
 
 **Assunto:**
 ```
-Verifique seu email corporativo - VGSA
+Verifique seu email corporativo
 ```
 
 **Corpo do Email:**
 ```html
 Olá %DISPLAY_NAME%,
 
-Bem-vindo à plataforma VGSA de Gestão de Selos!
+Bem-vindo à plataforma de Gestão de Selos!
 
 Para começar a usar o sistema, você precisa verificar seu email corporativo.
 
@@ -51,7 +51,7 @@ Este link expirará em 3 dias.
 Se você não criou esta conta, pode ignorar este email.
 
 ---
-VGSA - Gestão de Selos
+Gestão de Selos
 © 2025 Todos os direitos reservados
 ```
 
