@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAccessibility } from '../contexts/AccessibilityContext'
 import {
   Moon,
@@ -59,6 +59,8 @@ function AccessibilityIcon({ size = '1.75em' }: { size?: string | number }) {
 export function AccessibilityMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasFooter, setHasFooter] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerButtonRef = useRef<HTMLButtonElement>(null)
   const {
     isDarkMode,
     isHighContrast,
@@ -99,8 +101,132 @@ export function AccessibilityMenu() {
     }
   }, [])
 
+  // Função para obter todos os elementos focáveis dentro do menu
+  const getFocusableElements = (container: HTMLElement): HTMLElement[] => {
+    const focusableSelectors = [
+      'button:not([disabled])',
+      'a[href]',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(', ')
+
+    return Array.from(container.querySelectorAll(focusableSelectors)) as HTMLElement[]
+  }
+
+  // Focus trap: mantém o foco dentro do modal quando aberto
+  useEffect(() => {
+    if (!isOpen || !menuRef.current) return
+
+    const menu = menuRef.current
+    
+    // Função auxiliar para obter elementos focáveis atualizados
+    const getCurrentFocusableElements = () => getFocusableElements(menu)
+
+    // Foca no primeiro elemento quando o menu abre (com pequeno delay para garantir DOM atualizado)
+    const focusFirstElement = () => {
+      const focusableElements = getCurrentFocusableElements()
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus()
+      }
+    }
+
+    // Pequeno delay para garantir que o DOM foi renderizado
+    const timeoutId = setTimeout(focusFirstElement, 0)
+
+    // Handler para capturar Tab e Shift+Tab
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      const focusableElements = getCurrentFocusableElements()
+      if (focusableElements.length === 0) return
+
+      const currentFocus = document.activeElement as HTMLElement
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      // Verifica se o foco está dentro do menu
+      if (!menu.contains(currentFocus)) {
+        e.preventDefault()
+        firstElement.focus()
+        return
+      }
+
+      const currentIndex = focusableElements.indexOf(currentFocus)
+
+      // Se não encontrou o elemento atual, foca no primeiro
+      if (currentIndex === -1) {
+        e.preventDefault()
+        firstElement.focus()
+        return
+      }
+
+      // Tab (avançar)
+      if (!e.shiftKey) {
+        // Se está no último elemento, volta para o primeiro
+        if (currentIndex === focusableElements.length - 1) {
+          e.preventDefault()
+          firstElement.focus()
+        }
+      }
+      // Shift+Tab (voltar)
+      else {
+        // Se está no primeiro elemento, vai para o último
+        if (currentIndex === 0) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      }
+    }
+
+    // Adiciona o listener
+    document.addEventListener('keydown', handleKeyDown, true)
+
+    // Previne que elementos fora do menu recebam foco
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement
+      
+      // Permite foco no botão trigger quando o menu está fechando
+      if (target === triggerButtonRef.current) {
+        return
+      }
+
+      // Se o foco saiu do menu, redireciona para dentro
+      if (!menu.contains(target)) {
+        const focusableElements = getCurrentFocusableElements()
+        if (focusableElements.length > 0) {
+          // Usa requestAnimationFrame para garantir que o foco seja aplicado após o evento
+          requestAnimationFrame(() => {
+            focusableElements[0].focus()
+          })
+        }
+      }
+    }
+
+    document.addEventListener('focusin', handleFocusIn, true)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('keydown', handleKeyDown, true)
+      document.removeEventListener('focusin', handleFocusIn, true)
+    }
+  }, [isOpen])
+
   const toggleMenu = () => {
-    setIsOpen(prev => !prev)
+    setIsOpen(prev => {
+      const willOpen = !prev
+      
+      // Se está fechando, devolve o foco para o botão que abriu
+      if (!willOpen && triggerButtonRef.current) {
+        // Usa setTimeout para garantir que o estado foi atualizado
+        setTimeout(() => {
+          triggerButtonRef.current?.focus()
+        }, 0)
+      }
+      
+      return willOpen
+    })
   }
 
   const handleReset = () => {
@@ -116,10 +242,13 @@ export function AccessibilityMenu() {
     <>
       {/* Floating Button */}
       <button
+        ref={triggerButtonRef}
         onClick={toggleMenu}
         className="accessibility-floating-button"
         aria-label="Menu de Acessibilidade"
         title="Menu de Acessibilidade"
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
         <AccessibilityIcon size="2em" />
       </button>
@@ -132,15 +261,23 @@ export function AccessibilityMenu() {
             className="accessibility-overlay"
             onClick={toggleMenu}
             aria-hidden="true"
+            tabIndex={-1}
           />
 
           {/* Menu */}
-          <div className="accessibility-menu" style={menuStyle}>
+          <div
+            ref={menuRef}
+            className="accessibility-menu"
+            style={menuStyle}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="accessibility-menu-title"
+          >
             {/* Header */}
             <div className="accessibility-menu-header">
               <div className="accessibility-menu-title">
                 <AccessibilityIcon size="1.5em" />
-                <h2>Acessibilidade</h2>
+                <h2 id="accessibility-menu-title">Acessibilidade</h2>
               </div>
               <button
                 onClick={toggleMenu}

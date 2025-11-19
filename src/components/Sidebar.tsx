@@ -192,22 +192,27 @@ export function Sidebar() {
           "hidden lg:block fixed left-0 top-0 h-screen border-r border-neutral-200 bg-white transition-all duration-300",
           isCollapsed ? "w-20" : "w-64"
         )}
+        style={{ overflow: 'visible' }}
       >
         <SidebarContent isCollapsed={isCollapsed} />
-        
-        {/* Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          className="absolute -right-3 top-6 flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 bg-white shadow-md hover:bg-neutral-50 transition-colors"
-          aria-label={isCollapsed ? 'Expandir menu' : 'Minimizar menu'}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 text-neutral-600" />
-          ) : (
-            <ChevronLeft className="h-4 w-4 text-neutral-600" />
-          )}
-        </button>
       </aside>
+      
+      {/* Toggle Button - Fora do aside para não ser cortado */}
+      <button
+        onClick={toggleSidebar}
+        className="sidebar-toggle-button hidden lg:flex fixed items-center justify-center rounded-full border border-neutral-200 bg-white shadow-md hover:bg-neutral-50 transition-all duration-300 z-50 h-6 w-6"
+        style={{
+          left: isCollapsed ? 'calc(5rem - 0.75rem)' : 'calc(16rem - 0.75rem)',
+          top: '1.5rem',
+        }}
+        aria-label={isCollapsed ? 'Expandir menu' : 'Minimizar menu'}
+      >
+        {isCollapsed ? (
+          <ChevronRight className="h-4 w-4 text-neutral-600" />
+        ) : (
+          <ChevronLeft className="h-4 w-4 text-neutral-600" />
+        )}
+      </button>
 
       {/* Mobile Sidebar */}
       <Sheet>
