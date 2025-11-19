@@ -326,6 +326,7 @@ export async function searchCampaignsWithCompaniesByName(
 
 /**
  * Busca campanhas por nome do cliente
+ * Busca tanto pelo nome quanto pelo nome legal da empresa
  * @param companyNameSearch - Nome do cliente a buscar
  * @param organizationId - ID da organização
  */
@@ -342,9 +343,14 @@ export async function searchCampaignsByCompanyName(
     const populated = await populateCampaignCompanies(campaign)
     
     // Verifica se alguma empresa da campanha corresponde à busca
-    const hasMatchingCompany = populated.companies.some((company) =>
-      company.name.toLowerCase().includes(normalizedSearch),
-    )
+    // Busca tanto pelo nome quanto pelo nome legal (se existir)
+    const hasMatchingCompany = populated.companies.some((company) => {
+      const nameMatch = company.name.toLowerCase().includes(normalizedSearch)
+      const legalNameMatch = company.legalName
+        ? company.legalName.toLowerCase().includes(normalizedSearch)
+        : false
+      return nameMatch || legalNameMatch
+    })
 
     if (hasMatchingCompany) {
       matchingCampaigns.push(populated)
