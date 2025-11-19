@@ -617,7 +617,7 @@ export function CampaignsPage() {
                 </div>
               )}
 
-              {/* Formulário da Campanha */}
+              {/* Formulário Completo da Campanha */}
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 <CampaignForm
                   name={campaignName}
@@ -629,37 +629,42 @@ export function CampaignsPage() {
                   onObservationChange={setObservation}
                   onInstructionChange={handleInstructionChange}
                 />
-              </div>
 
-              {/* Procurar Cliente */}
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-neutral-800">
-                    {mode === 'edit' ? 'Gerenciar Clientes da Campanha' : 'Selecionar Clientes'}
-                  </h3>
-                  <Button
-                    onClick={handleListAll}
-                    disabled={isLoading}
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Listar Todos os Clientes
-                  </Button>
+                {/* Divisor */}
+                <div className="my-8 border-t border-neutral-200" />
+
+                {/* Procurar Cliente */}
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-neutral-800">
+                      {mode === 'edit' ? 'Gerenciar Clientes da Campanha' : 'Selecionar Clientes'}
+                    </h3>
+                    <Button
+                      onClick={handleListAll}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <Search className="h-4 w-4" />
+                      Listar Todos os Clientes
+                    </Button>
+                  </div>
+                  <ClientSearchBar
+                    onSearchByName={handleSearchByName}
+                    onSearchByCNPJ={handleSearchByCNPJ}
+                    isLoading={isLoading}
+                  />
                 </div>
-                <ClientSearchBar
-                  onSearchByName={handleSearchByName}
-                  onSearchByCNPJ={handleSearchByCNPJ}
-                  isLoading={isLoading}
-                />
-              </div>
 
-              {/* Tabela de Seleção de Clientes */}
-              <ClientSelectionTable
-                companies={companies}
-                selectedIds={selectedIds}
-                onToggleClient={handleToggleClient}
-              />
+                {/* Tabela de Seleção de Clientes */}
+                <div className="mt-6">
+                  <ClientSelectionTable
+                    companies={companies}
+                    selectedIds={selectedIds}
+                    onToggleClient={handleToggleClient}
+                  />
+                </div>
+              </div>
             </>
           ) : (
             <>

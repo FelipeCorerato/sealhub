@@ -26,13 +26,13 @@ export function ClientSelectionTable({
   }
 
   return (
-    <div className="rounded-2xl bg-white shadow-sm">
-      <div className="p-4">
+    <div>
+      <div className="mb-4">
         <p className="text-sm text-neutral-600">
           {companies.length} Resultado(s) encontrado(s) • {selectedIds.size} selecionado(s)
         </p>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg border border-neutral-200">
         <Table>
           <TableHeader>
             <TableRow>
