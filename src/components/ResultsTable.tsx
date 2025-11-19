@@ -115,16 +115,14 @@ function CompanyGroup({
                 </div>
               </div>
 
-              {mode === 'add' && (
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="outline"
-                    className={cn('font-medium', statusColors[matriz.status])}
-                  >
-                    {statusLabels[matriz.status]}
-                  </Badge>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="outline"
+                  className={cn('font-medium', statusColors[matriz.status])}
+                >
+                  {statusLabels[matriz.status]}
+                </Badge>
+              </div>
             </div>
 
           </div>
@@ -173,19 +171,17 @@ function CompanyGroup({
                     </div>
                   </div>
 
-                  {mode === 'add' && (
-                    <div className="ml-5 mt-2">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'text-xs font-medium',
-                          statusColors[filial.status],
-                        )}
-                      >
-                        {statusLabels[filial.status]}
-                      </Badge>
-                    </div>
-                  )}
+                  <div className="ml-5 mt-2">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-xs font-medium',
+                        statusColors[filial.status],
+                      )}
+                    >
+                      {statusLabels[filial.status]}
+                    </Badge>
+                  </div>
                 </div>
 
               </div>
@@ -300,16 +296,14 @@ export function ResultsTable({
                 </div>
               </div>
 
-              {mode === 'add' && (
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="outline"
-                    className={cn('font-medium', statusColors[matriz.status])}
-                  >
-                    {statusLabels[matriz.status]}
-                  </Badge>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="outline"
+                  className={cn('font-medium', statusColors[matriz.status])}
+                >
+                  {statusLabels[matriz.status]}
+                </Badge>
+              </div>
             </div>
 
           </div>
@@ -412,19 +406,17 @@ export function ResultsTable({
                       </div>
                     </div>
 
-                    {mode === 'add' && (
-                      <div className="ml-5 mt-2">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'text-xs font-medium',
-                            statusColors[filial.status],
-                          )}
-                        >
-                          {statusLabels[filial.status]}
-                        </Badge>
-                      </div>
-                    )}
+                    <div className="ml-5 mt-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs font-medium',
+                          statusColors[filial.status],
+                        )}
+                      >
+                        {statusLabels[filial.status]}
+                      </Badge>
+                    </div>
                   </div>
 
                 </div>
