@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Search, Save, Loader2 } from 'lucide-react'
+import { Search, Save, Loader2, Trash2 } from 'lucide-react'
 import type { Company, CompanyData } from '@/types'
 import { validateCNPJDigits, fetchRelatedCNPJs } from '@/lib/cnpj-api'
 import {
@@ -21,6 +21,7 @@ import {
   searchRelatedCompanies,
   saveMatrizAndBranches,
   updateCompany,
+  deleteCompany,
 } from '@/lib/firebase/companies'
 import { isHeadquarters } from '@/lib/cnpj'
 import { useAuth } from '@/contexts/AuthContext'
@@ -43,11 +44,13 @@ export function ClientsPage() {
   const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ name: '', address: '' })
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const resetEditForm = () => {
     setEditingCompanyId(null)
     setEditForm({ name: '', address: '' })
     setIsEditDialogOpen(false)
+    setIsDeleteDialogOpen(false)
   }
 
   const handleSearchByCNPJ = async (cnpj: string) => {
@@ -408,6 +411,66 @@ export function ClientsPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!editingCompanyId || !editingCompany) {
+      return
+    }
+
+    // Só permite excluir filiais
+    if (editingCompany.type !== 'branch') {
+      toast.error('Erro', {
+        description: 'Apenas filiais podem ser excluídas.',
+      })
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      await deleteCompany(editingCompanyId)
+      
+      // Remove a empresa da lista
+      setCompanies((prev) => prev.filter((company) => company.id !== editingCompanyId))
+      
+      // Se a empresa excluída estava selecionada, limpa a seleção
+      if (selectedCompany?.id === editingCompanyId) {
+        setSelectedCompany(undefined)
+      }
+      
+      resetEditForm()
+      
+      toast.success('Filial excluída com sucesso!', {
+        description: `${editingCompany.name} foi removida.`,
+      })
+    } catch (error) {
+      console.error('Erro ao excluir filial:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao excluir filial'
+      
+      toast.error('Erro ao excluir', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    if (!editingCompany) {
+      return
+    }
+    
+    // Só permite excluir filiais
+    if (editingCompany.type !== 'branch') {
+      toast.error('Erro', {
+        description: 'Apenas filiais podem ser excluídas.',
+      })
+      return
+    }
+    
+    setIsDeleteDialogOpen(true)
+  }
+
   const handleNewClient = () => {
     setMode('add')
     setCompanies([])
@@ -506,36 +569,87 @@ export function ClientsPage() {
 
         {/* Dialog de Edição */}
         {mode === 'search' && editingCompany && (
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Editar Cliente</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <CompanyEditForm
-                  name={editForm.name}
-                  address={editForm.address}
-                  cnpj={editingCompany.cnpj}
-                  type={editingCompany.type}
-                  onChange={handleEditFormChange}
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <>
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Editar Cliente</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <CompanyEditForm
+                    name={editForm.name}
+                    address={editForm.address}
+                    cnpj={editingCompany.cnpj}
+                    type={editingCompany.type}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <DialogFooter>
+                  {editingCompany.type === 'branch' && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteClick}
+                      disabled={isLoading}
+                      className="mr-auto text-white"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Filial
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Dialog de Confirmação de Exclusão */}
+            <Dialog 
+              open={isDeleteDialogOpen} 
+              onOpenChange={(open) => {
+                setIsDeleteDialogOpen(open)
+                // Se fechar o diálogo de confirmação, não fecha o de edição
+              }}
+            >
+              <DialogContent className="sm:max-w-[400px]">
+                <DialogHeader>
+                  <DialogTitle>Confirmar Exclusão</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Tem certeza que deseja excluir a filial <strong>{editingCompany.name}</strong>?
+                    Esta ação não pode ser desfeita.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                    disabled={isLoading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                    className="text-white"
+                  >
+                    {isLoading ? 'Excluindo...' : 'Excluir'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
 
         {/* Botão de Salvar no modo add */}
