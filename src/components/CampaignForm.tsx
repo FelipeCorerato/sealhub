@@ -127,7 +127,9 @@ export function CampaignForm({
                 <div
                   className={`flex h-16 w-16 items-center justify-center rounded-full transition-transform group-hover:scale-105 ${item.bgColor}`}
                 >
-                  <Icon className="h-9 w-9 text-white" />
+                  <span title={`Ícone de ${item.label.toLowerCase()}`}>
+                    <Icon className="h-9 w-9 text-white" aria-label={`Ícone de ${item.label.toLowerCase()}`} />
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox

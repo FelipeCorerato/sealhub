@@ -88,12 +88,16 @@ export function CampaignSearchBar({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span title="Ícone de carregamento girando">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-label="Ícone de carregamento girando" />
+                  </span>
                   Buscando...
                 </>
               ) : (
                 <>
-                  <Search className="h-4 w-4" />
+                  <span title="Ícone de lupa de busca">
+                    <Search className="h-4 w-4" aria-label="Ícone de lupa de busca" />
+                  </span>
                   Buscar
                 </>
               )}
@@ -152,12 +156,16 @@ export function CampaignSearchBar({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span title="Ícone de carregamento girando">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-label="Ícone de carregamento girando" />
+                  </span>
                   Buscando...
                 </>
               ) : (
                 <>
-                  <Search className="h-4 w-4" />
+                  <span title="Ícone de lupa de busca">
+                    <Search className="h-4 w-4" aria-label="Ícone de lupa de busca" />
+                  </span>
                   Buscar
                 </>
               )}

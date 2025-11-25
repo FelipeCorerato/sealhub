@@ -162,7 +162,9 @@ export function OrganizationSettingsPage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
+          <span title="Ícone de círculo de alerta">
+            <AlertCircle className="mx-auto h-12 w-12 text-red-500" aria-label="Ícone de círculo de alerta" />
+          </span>
           <h2 className="mt-4 text-xl font-bold text-neutral-800">
             Acesso Negado
           </h2>
@@ -219,7 +221,9 @@ export function OrganizationSettingsPage() {
   if (!organization) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        <span title="Ícone de carregamento girando">
+          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" aria-label="Ícone de carregamento girando" />
+        </span>
       </div>
     )
   }
@@ -379,7 +383,7 @@ export function OrganizationSettingsPage() {
                     <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 p-2">
                       <img
                         src={logoUrl}
-                        alt="Preview da logo"
+                        alt={`Preview da logo da organização ${organization.name}`}
                         className="h-full w-full object-contain"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none'
@@ -442,12 +446,16 @@ export function OrganizationSettingsPage() {
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span title="Ícone de carregamento girando">
+                        <Loader2 className="h-5 w-5 animate-spin" aria-label="Ícone de carregamento girando" />
+                      </span>
                       Salvando...
                     </>
                   ) : (
                     <>
-                      <Save className="h-5 w-5" />
+                      <span title="Ícone de disco de salvar">
+                        <Save className="h-5 w-5" aria-label="Ícone de disco de salvar" />
+                      </span>
                       Salvar Alterações
                     </>
                   )}
@@ -464,7 +472,9 @@ export function OrganizationSettingsPage() {
 
             {isLoadingUsers ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+                <span title="Ícone de carregamento girando">
+                  <Loader2 className="h-6 w-6 animate-spin text-neutral-400" aria-label="Ícone de carregamento girando" />
+                </span>
               </div>
             ) : users.length === 0 ? (
               <div className="py-8 text-center text-neutral-500">
@@ -511,7 +521,9 @@ export function OrganizationSettingsPage() {
                           <div className="flex flex-col items-center gap-1">
                             {orgUser.emailVerified && (
                               <div title="Email verificado">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <span title="Ícone de círculo com marca de seleção">
+                                  <CheckCircle className="h-4 w-4 text-green-600" aria-label="Ícone de círculo com marca de seleção" />
+                                </span>
                               </div>
                             )}
                             {orgUser.isAssociated ? (
@@ -524,12 +536,16 @@ export function OrganizationSettingsPage() {
                         <td className="py-3 text-center">
                           {orgUser.role === 'admin' ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                              <Shield className="h-3 w-3" />
+                              <span title="Ícone de escudo">
+                                <Shield className="h-3 w-3" aria-label="Ícone de escudo" />
+                              </span>
                               Admin
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700">
-                              <User className="h-3 w-3" />
+                              <span title="Ícone de usuário">
+                                <User className="h-3 w-3" aria-label="Ícone de usuário" />
+                              </span>
                               Membro
                             </span>
                           )}
@@ -554,7 +570,9 @@ export function OrganizationSettingsPage() {
                                   title={orgUser.role === 'admin' ? 'Remova o admin primeiro' : 'Desassociar usuário'}
                                 >
                                   {updatingUserId === orgUser.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <span title="Ícone de carregamento girando">
+                                      <Loader2 className="h-3 w-3 animate-spin" aria-label="Ícone de carregamento girando" />
+                                    </span>
                                   ) : (
                                     'Desassociar'
                                   )}
@@ -568,7 +586,9 @@ export function OrganizationSettingsPage() {
                                   className="w-[110px] text-xs"
                                 >
                                   {updatingUserId === orgUser.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <span title="Ícone de carregamento girando">
+                                      <Loader2 className="h-3 w-3 animate-spin" aria-label="Ícone de carregamento girando" />
+                                    </span>
                                   ) : (
                                     'Associar'
                                   )}
@@ -586,7 +606,9 @@ export function OrganizationSettingsPage() {
                                     className="w-[120px] text-xs"
                                   >
                                     {updatingUserId === orgUser.id ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                      <span title="Ícone de carregamento girando">
+                                      <Loader2 className="h-3 w-3 animate-spin" aria-label="Ícone de carregamento girando" />
+                                    </span>
                                     ) : (
                                       'Remover Admin'
                                     )}
@@ -600,7 +622,9 @@ export function OrganizationSettingsPage() {
                                     className="w-[120px] text-xs"
                                   >
                                     {updatingUserId === orgUser.id ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                      <span title="Ícone de carregamento girando">
+                                      <Loader2 className="h-3 w-3 animate-spin" aria-label="Ícone de carregamento girando" />
+                                    </span>
                                     ) : (
                                       'Tornar Admin'
                                     )}

@@ -9,7 +9,7 @@ export function Logo() {
       {organization?.theme.logoUrl ? (
         <img 
           src={organization.theme.logoUrl} 
-          alt={organization.name}
+          alt={`Logo da organização ${organization.name}`}
           className="h-14 w-14 object-contain rounded-lg"
         />
       ) : (

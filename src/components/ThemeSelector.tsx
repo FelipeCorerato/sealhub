@@ -128,7 +128,9 @@ export function ThemeSelector() {
           className="text-neutral-700 hover:bg-neutral-100"
           title="Alterar tema"
         >
-          <Palette className="h-5 w-5" />
+          <span title="Ícone de paleta de cores">
+            <Palette className="h-5 w-5" aria-label="Ícone de paleta de cores" />
+          </span>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[400px] sm:w-[540px] flex flex-col">
@@ -216,7 +218,9 @@ export function ThemeSelector() {
                       className="rounded-full p-1"
                       style={{ backgroundColor: organization.theme.primaryColor || '#D97B35' }}
                     >
-                      <Check className="h-5 w-5 text-white" />
+                      <span title="Ícone de marca de seleção">
+                        <Check className="h-5 w-5 text-white" aria-label="Ícone de marca de seleção" />
+                      </span>
                     </div>
                   )}
                 </div>
@@ -310,7 +314,9 @@ export function ThemeSelector() {
                       className="rounded-full p-1"
                       style={{ backgroundColor: themeData.colors.primary }}
                     >
-                      <Check className="h-5 w-5 text-white" />
+                      <span title="Ícone de marca de seleção">
+                        <Check className="h-5 w-5 text-white" aria-label="Ícone de marca de seleção" />
+                      </span>
                     </div>
                   )}
                 </div>

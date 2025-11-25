@@ -57,7 +57,11 @@ export function TopBar({
             }
           }}
         >
-          {type !== 'admin' && <Search className="h-4 w-4" />}
+          {type !== 'admin' && (
+            <span title="Ícone de lupa de busca">
+              <Search className="h-4 w-4" aria-label="Ícone de lupa de busca" />
+            </span>
+          )}
           <span className={type === 'admin' ? '' : 'hidden sm:inline'}>{searchLabel}</span>
         </Button>
         <Button
@@ -86,7 +90,11 @@ export function TopBar({
             }
           }}
         >
-          {type !== 'admin' && <Plus className="h-4 w-4" />}
+          {type !== 'admin' && (
+            <span title="Ícone de sinal de mais">
+              <Plus className="h-4 w-4" aria-label="Ícone de sinal de mais" />
+            </span>
+          )}
           <span className={type === 'admin' ? '' : 'hidden sm:inline'}>{newLabel}</span>
         </Button>
       </div>

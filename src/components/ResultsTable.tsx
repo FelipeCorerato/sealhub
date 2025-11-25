@@ -90,7 +90,9 @@ function CompanyGroup({
             <div className="flex-1">
               <div className="mb-3 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white shadow-md">
-                  <Building2 className="h-6 w-6" />
+                  <span title="Ícone de prédio">
+                    <Building2 className="h-6 w-6" aria-label="Ícone de prédio" />
+                  </span>
                 </div>
                 <div>
                   <Badge className="bg-[var(--color-primary)] text-white border-0">
@@ -110,7 +112,9 @@ function CompanyGroup({
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  <span title="Ícone de marcador de localização">
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" aria-label="Ícone de marcador de localização" />
+                  </span>
                   <span className="dark:text-neutral-300">{matriz.address}</span>
                 </div>
               </div>
@@ -166,7 +170,9 @@ function CompanyGroup({
                       {formatCNPJ(filial.cnpj)}
                     </div>
                     <div className="flex items-start gap-2">
-                      <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                      <span title="Ícone de marcador de localização">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" aria-label="Ícone de marcador de localização" />
+                  </span>
                       <span className="text-xs dark:text-neutral-300">{filial.address}</span>
                     </div>
                   </div>
@@ -271,7 +277,9 @@ export function ResultsTable({
             <div className="flex-1">
               <div className="mb-3 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white shadow-md">
-                  <Building2 className="h-6 w-6" />
+                  <span title="Ícone de prédio">
+                    <Building2 className="h-6 w-6" aria-label="Ícone de prédio" />
+                  </span>
                 </div>
                 <div>
                   <Badge className="bg-[var(--color-primary)] text-white border-0">
@@ -291,7 +299,9 @@ export function ResultsTable({
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                  <span title="Ícone de marcador de localização">
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" aria-label="Ícone de marcador de localização" />
+                  </span>
                   <span className="dark:text-neutral-300">{matriz.address}</span>
                 </div>
               </div>
@@ -325,7 +335,9 @@ export function ResultsTable({
                   onClick={onDeselectAllBranches}
                   className="h-8 text-xs"
                 >
-                  <Square className="mr-1.5 h-3.5 w-3.5" />
+                  <span title="Ícone de quadrado vazio">
+                    <Square className="mr-1.5 h-3.5 w-3.5" aria-label="Ícone de quadrado vazio" />
+                  </span>
                   Deselecionar todas
                 </Button>
                 <Button
@@ -334,7 +346,9 @@ export function ResultsTable({
                   onClick={onSelectAllBranches}
                   className="h-8 text-xs"
                 >
-                  <CheckSquare2 className="mr-1.5 h-3.5 w-3.5" />
+                  <span title="Ícone de quadrado com marca de seleção">
+                    <CheckSquare2 className="mr-1.5 h-3.5 w-3.5" aria-label="Ícone de quadrado com marca de seleção" />
+                  </span>
                   Selecionar todas
                 </Button>
               </div>
@@ -396,7 +410,9 @@ export function ResultsTable({
                         {formatCNPJ(filial.cnpj)}
                       </div>
                       <div className="flex items-start gap-2">
-                        <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
+                        <span title="Ícone de marcador de localização">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-neutral-500" aria-label="Ícone de marcador de localização" />
+                  </span>
                         <span className={cn(
                           'text-xs',
                           !isBranchChecked && 'text-neutral-400 dark:text-neutral-600'

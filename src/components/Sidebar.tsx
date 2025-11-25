@@ -96,7 +96,9 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
                   : undefined
               }
             >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
+              <span title={`Ícone de ${item.name.toLowerCase()}`}>
+                <item.icon className="h-5 w-5 flex-shrink-0" aria-label={`Ícone de ${item.name.toLowerCase()}`} />
+              </span>
               {!isCollapsed && item.name}
             </Link>
           )
@@ -138,7 +140,9 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
                       : undefined
                   }
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <span title={`Ícone de ${item.name.toLowerCase()}`}>
+                    <item.icon className="h-5 w-5 flex-shrink-0" aria-label={`Ícone de ${item.name.toLowerCase()}`} />
+                  </span>
                   {!isCollapsed && item.name}
                 </Link>
               )
@@ -156,7 +160,9 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
               onClick={handleLogout}
               className="flex-1 justify-start gap-2 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
             >
-              <LogOut className="h-5 w-5" />
+              <span title="Ícone de saída">
+                <LogOut className="h-5 w-5" aria-label="Ícone de saída" />
+              </span>
               SAIR
             </Button>
             <ThemeSelector />
@@ -172,7 +178,9 @@ function SidebarContent({ isCollapsed = false }: SidebarContentProps) {
               title="Sair"
               className="justify-center text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 p-2"
             >
-              <LogOut className="h-5 w-5" />
+              <span title="Ícone de saída">
+                <LogOut className="h-5 w-5" aria-label="Ícone de saída" />
+              </span>
             </Button>
           </div>
         )}
@@ -208,9 +216,13 @@ export function Sidebar() {
         aria-label={isCollapsed ? 'Expandir menu' : 'Minimizar menu'}
       >
         {isCollapsed ? (
-          <ChevronRight className="h-4 w-4 text-neutral-600" />
+          <span title="Ícone de seta apontando para a direita">
+            <ChevronRight className="h-4 w-4 text-neutral-600" aria-label="Ícone de seta apontando para a direita" />
+          </span>
         ) : (
-          <ChevronLeft className="h-4 w-4 text-neutral-600" />
+          <span title="Ícone de seta apontando para a esquerda">
+            <ChevronLeft className="h-4 w-4 text-neutral-600" aria-label="Ícone de seta apontando para a esquerda" />
+          </span>
         )}
       </button>
 
@@ -221,8 +233,11 @@ export function Sidebar() {
             variant="outline"
             size="icon"
             className="fixed left-4 top-4 z-40 lg:hidden"
+            aria-label="Abrir menu"
           >
-            <Menu className="h-5 w-5" />
+            <span title="Ícone de menu hambúrguer">
+              <Menu className="h-5 w-5" aria-label="Ícone de menu hambúrguer" />
+            </span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">

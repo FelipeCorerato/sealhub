@@ -83,12 +83,16 @@ export function FooterBar({
         >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <span title="Ícone de carregamento girando">
+                <Loader2 className="h-4 w-4 animate-spin" aria-label="Ícone de carregamento girando" />
+              </span>
               <span className="hidden sm:inline">Salvando...</span>
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
+              <span title="Ícone de disco de salvar">
+                <Save className="h-4 w-4" aria-label="Ícone de disco de salvar" />
+              </span>
               <span className="hidden sm:inline">Salvar</span>
             </>
           )}

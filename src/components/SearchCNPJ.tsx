@@ -47,7 +47,9 @@ export function SearchCNPJ({ onSearch, isLoading = false }: SearchCNPJProps) {
       {!isLoading && (
         <div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5">
           <div className="flex gap-3 items-start">
-            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} />
+            <span title="Ícone de informação">
+              <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--color-primary)' }} aria-label="Ícone de informação" />
+            </span>
             <div className="flex-1">
               <p className="text-sm text-neutral-600 leading-relaxed">
                 A consulta à API da Receita Federal pode levar alguns segundos. Aguarde o carregamento.
@@ -67,7 +69,9 @@ export function SearchCNPJ({ onSearch, isLoading = false }: SearchCNPJProps) {
           }}
         >
           <div className="flex gap-3 items-center">
-            <Loader2 className="h-5 w-5 shrink-0 animate-spin" style={{ color: 'var(--color-primary)' }} />
+            <span title="Ícone de carregamento girando">
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin" style={{ color: 'var(--color-primary)' }} aria-label="Ícone de carregamento girando" />
+            </span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-neutral-700 mb-1">
                 Consultando dados na Receita Federal...
@@ -125,12 +129,16 @@ export function SearchCNPJ({ onSearch, isLoading = false }: SearchCNPJProps) {
         >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <span title="Ícone de carregamento girando">
+                <Loader2 className="h-4 w-4 animate-spin" aria-label="Ícone de carregamento girando" />
+              </span>
               Buscando...
             </>
           ) : (
             <>
-              <Search className="h-4 w-4" />
+              <span title="Ícone de lupa de busca">
+                <Search className="h-4 w-4" aria-label="Ícone de lupa de busca" />
+              </span>
               Buscar
             </>
           )}

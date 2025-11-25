@@ -58,21 +58,29 @@ export function CampaignResultsTable({
               </h3>
               <div className="flex flex-wrap gap-3 text-sm text-neutral-600">
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
+                  <span title="Ícone de calendário">
+                    <Calendar className="h-4 w-4" aria-label="Ícone de calendário" />
+                  </span>
                   <span title="Data de criação">Criada em: {formatDate(campaign.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span title="Ícone de relógio">
+                    <Clock className="h-4 w-4 text-blue-600" aria-label="Ícone de relógio" />
+                  </span>
                   <span title="Última atualização" className="text-blue-600 font-medium">
                     Atualizada em: {formatDate(campaign.updatedAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
+                  <span title="Ícone de usuário">
+                    <User className="h-4 w-4" aria-label="Ícone de usuário" />
+                  </span>
                   <span>Remetente: {campaign.sender.split('\n')[0]}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Package className="h-4 w-4" />
+                  <span title="Ícone de pacote">
+                    <Package className="h-4 w-4" aria-label="Ícone de pacote" />
+                  </span>
                   <span>{campaign.companies.length} cliente(s)</span>
                 </div>
               </div>
@@ -120,7 +128,9 @@ export function CampaignResultsTable({
                   className="gap-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white"
                   title="Editar campanha"
                 >
-                  <Edit className="h-4 w-4" />
+                  <span title="Ícone de lápis de edição">
+                    <Edit className="h-4 w-4" aria-label="Ícone de lápis de edição" />
+                  </span>
                   Editar
                 </Button>
               )}
@@ -140,7 +150,9 @@ export function CampaignResultsTable({
                   }}
                   title="Gerar selos"
                 >
-                  <FileText className="h-4 w-4" />
+                  <span title="Ícone de documento">
+                    <FileText className="h-4 w-4" aria-label="Ícone de documento" />
+                  </span>
                   Gerar Selos
                 </Button>
               )}
