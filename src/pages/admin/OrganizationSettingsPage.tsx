@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { Sidebar } from '@/components/Sidebar'
-import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,10 +15,13 @@ import { cn } from '@/lib/utils'
 type PageMode = 'geral' | 'usuarios'
 
 export function OrganizationSettingsPage() {
+  const location = useLocation()
   const { organization, isAdmin, refreshOrganization } = useOrganization()
   const { user } = useAuth()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<PageMode>('geral')
+  
+  // Determina o modo baseado na rota
+  const mode: PageMode = location.pathname === '/admin/usuarios' ? 'usuarios' : 'geral'
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [users, setUsers] = useState<Array<{
@@ -228,8 +231,9 @@ export function OrganizationSettingsPage() {
     )
   }
 
-  const handleGeralMode = () => setMode('geral')
-  const handleUsuariosMode = () => setMode('usuarios')
+  const getPageTitle = () => {
+    return mode === 'geral' ? 'Configurações Gerais' : 'Gerenciar Usuários'
+  }
 
   return (
     <div className="min-h-screen">
@@ -242,13 +246,9 @@ export function OrganizationSettingsPage() {
         )}
       >
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
-          <TopBar
-            title="Painel de Administração"
-            mode={mode}
-            type="admin"
-            onNovoCliente={handleGeralMode}
-            onBuscarCliente={handleUsuariosMode}
-          />
+          <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
+            <h2 className="text-lg font-semibold text-neutral-800 sm:text-xl">{getPageTitle()}</h2>
+          </div>
 
           {mode === 'geral' && (
             <div className="space-y-6">

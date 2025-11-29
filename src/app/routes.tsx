@@ -17,7 +17,7 @@ function RootRedirect() {
   }
 
   return (
-    <Navigate to={isAuthenticated ? '/clientes' : '/login'} replace />
+    <Navigate to={isAuthenticated ? '/clientes/adicionar' : '/login'} replace />
   )
 }
 
@@ -31,6 +31,18 @@ export function AppRoutes() {
       <Route path="/aguardando-associacao" element={<PendingAssociationPage />} />
       <Route
         path="/clientes"
+        element={<Navigate to="/clientes/adicionar" replace />}
+      />
+      <Route
+        path="/clientes/adicionar"
+        element={
+          <PrivateRoute>
+            <ClientsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/clientes/buscar"
         element={
           <PrivateRoute>
             <ClientsPage />
@@ -39,6 +51,18 @@ export function AppRoutes() {
       />
       <Route
         path="/campanhas"
+        element={<Navigate to="/campanhas/nova" replace />}
+      />
+      <Route
+        path="/campanhas/nova"
+        element={
+          <PrivateRoute>
+            <CampaignsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/campanhas/buscar"
         element={
           <PrivateRoute>
             <CampaignsPage />
@@ -47,6 +71,18 @@ export function AppRoutes() {
       />
       <Route
         path="/admin"
+        element={<Navigate to="/admin/geral" replace />}
+      />
+      <Route
+        path="/admin/geral"
+        element={
+          <PrivateRoute>
+            <OrganizationSettingsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/usuarios"
         element={
           <PrivateRoute>
             <OrganizationSettingsPage />

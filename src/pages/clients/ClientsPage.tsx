@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
-import { TopBar } from '@/components/TopBar'
 import { SearchCNPJ } from '@/components/SearchCNPJ'
 import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ResultsTable } from '@/components/ResultsTable'
@@ -30,13 +30,14 @@ import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
-type PageMode = 'add' | 'search'
-
 export function ClientsPage() {
+  const location = useLocation()
   const { user } = useAuth()
   const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<PageMode>('add')
+  
+  // Determina o modo baseado na rota
+  const mode = location.pathname === '/clientes/buscar' ? 'search' : 'add'
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedCompany, setSelectedCompany] = useState<Company>()
   const [selectedBranchCNPJs, setSelectedBranchCNPJs] = useState<Set<string>>(new Set())
@@ -471,22 +472,6 @@ export function ClientsPage() {
     setIsDeleteDialogOpen(true)
   }
 
-  const handleNewClient = () => {
-    setMode('add')
-    setCompanies([])
-    setSelectedCompany(undefined)
-    setSelectedBranchCNPJs(new Set())
-    resetEditForm()
-  }
-
-  const handleSearchClient = () => {
-    setMode('search')
-    setCompanies([])
-    setSelectedCompany(undefined)
-    setSelectedBranchCNPJs(new Set())
-    resetEditForm()
-  }
-
   const pageTitle = mode === 'add' ? 'Adicionar Cliente' : 'Procurar Cliente'
   const tableMode = mode === 'search' ? 'edit' : mode
   const editingCompany = editingCompanyId
@@ -501,13 +486,11 @@ export function ClientsPage() {
         isCollapsed ? "lg:pl-20" : "lg:pl-64"
       )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-6">
-          <TopBar
-            title="Painel de Clientes"
-            type="clients"
-            mode={mode}
-            onNovoCliente={handleNewClient}
-            onBuscarCliente={handleSearchClient}
-          />
+          <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
+            <h2 className="text-lg font-semibold text-neutral-800 sm:text-xl">
+              {mode === 'add' ? 'Adicionar Cliente' : 'Buscar Clientes'}
+            </h2>
+          </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm transition-all duration-300">
             {mode === 'add' ? (

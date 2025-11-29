@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from '@/components/Sidebar'
-import { TopBar } from '@/components/TopBar'
 import { CampaignForm } from '@/components/CampaignForm'
 import { ClientSearchBar } from '@/components/ClientSearchBar'
 import { ClientSelectionTable } from '@/components/ClientSelectionTable'
@@ -31,10 +31,18 @@ import { toast } from 'sonner'
 import { printSeals } from '@/lib/seal-generator'
 
 export function CampaignsPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { organization } = useOrganization()
   const { isCollapsed } = useSidebar()
-  const [mode, setMode] = useState<'add' | 'search' | 'edit'>('add')
+  
+  // Estado para campanha sendo editada (ao adicionar mais clientes)
+  const [editingCampaign, setEditingCampaign] = useState<CampaignWithCompanies | null>(null)
+  
+  // Determina o modo baseado na rota
+  const isSearchMode = location.pathname === '/campanhas/buscar'
+  const mode = isSearchMode ? 'search' : (editingCampaign ? 'edit' : 'add')
   
   // Estados para criação de campanha
   const [campaignName, setCampaignName] = useState('')
@@ -46,9 +54,6 @@ export function CampaignsPage() {
     handleWithCare: true,
     thisWayUp: true,
   })
-
-  // Estado para campanha sendo editada (ao adicionar mais clientes)
-  const [editingCampaign, setEditingCampaign] = useState<CampaignWithCompanies | null>(null)
 
   const [companies, setCompanies] = useState<Company[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -251,7 +256,7 @@ export function CampaignsPage() {
         }, 500)
 
         // Volta para o modo de busca
-        setMode('search')
+        navigate('/campanhas/buscar')
         setEditingCampaign(null)
         
         // Atualiza os resultados da busca para refletir as mudanças
@@ -322,29 +327,6 @@ export function CampaignsPage() {
     } finally {
       setIsSaving(false)
     }
-  }
-
-  const handleNewCampaign = () => {
-    setMode('add')
-    setEditingCampaign(null)
-    // Reset form
-    setCampaignName('')
-    setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
-    setObservation('')
-    setInstructions({
-      fragile: true,
-      attention: true,
-      handleWithCare: true,
-      thisWayUp: true,
-    })
-    setSelectedIds(new Set())
-    setCompanies([])
-    setSearchResults([])
-  }
-
-  const handleSearchCampaign = () => {
-    setMode('search')
-    setSearchResults([])
   }
 
   // Handlers para busca de campanhas
@@ -432,8 +414,8 @@ export function CampaignsPage() {
   }
 
   const handleEdit = (campaign: CampaignWithCompanies) => {
-    // Muda para o modo de edição unificado
-    setMode('edit')
+    // Navega para a página de nova campanha e carrega os dados
+    navigate('/campanhas/nova')
     setEditingCampaign(campaign)
     
     // Carrega os dados da campanha no formulário
@@ -494,7 +476,7 @@ export function CampaignsPage() {
       })
 
       // Volta para o modo de busca e atualiza os resultados
-      setMode('search')
+      navigate('/campanhas/buscar')
       setEditingCampaign(null)
       handleListAllCampaigns()
     } catch (error) {
@@ -551,13 +533,11 @@ export function CampaignsPage() {
         isCollapsed ? "lg:pl-20" : "lg:pl-64"
       )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
-          <TopBar
-            title="Painel de Campanhas"
-            type="campaigns"
-            mode={mode}
-            onNovoCliente={handleNewCampaign}
-            onBuscarCliente={handleSearchCampaign}
-          />
+          <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
+            <h2 className="text-lg font-semibold text-neutral-800 sm:text-xl">
+              {isSearchMode ? 'Buscar Campanhas' : mode === 'edit' ? `Editando: ${campaignName || 'Campanha'}` : 'Nova Campanha'}
+            </h2>
+          </div>
 
           {mode === 'add' || mode === 'edit' ? (
             <>
@@ -595,7 +575,7 @@ export function CampaignsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setMode('search')
+                        navigate('/campanhas/buscar')
                         setEditingCampaign(null)
                         setCampaignName('')
                         setSender('M7 Comercial Importadora e Exportadora LTDA\nRua Machado de Assis - 581 B\nVila Lutfalla - São Carlos, SP\nCEP: 13.570-673')
