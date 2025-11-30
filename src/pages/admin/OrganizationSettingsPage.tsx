@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSidebar } from '@/contexts/SidebarContext'
 import { Sidebar } from '@/components/Sidebar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +17,6 @@ export function OrganizationSettingsPage() {
   const location = useLocation()
   const { organization, isAdmin, refreshOrganization } = useOrganization()
   const { user } = useAuth()
-  const { isCollapsed } = useSidebar()
   
   // Determina o modo baseado na rota
   const mode: PageMode = location.pathname === '/admin/usuarios' ? 'usuarios' : 'geral'
@@ -242,7 +240,7 @@ export function OrganizationSettingsPage() {
       <main
         className={cn(
           'transition-all duration-300',
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+'lg:pl-64'
         )}
       >
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">

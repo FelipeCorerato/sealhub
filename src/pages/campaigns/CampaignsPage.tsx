@@ -25,7 +25,6 @@ import {
 import { getUserProfiles, type UserProfile } from '@/lib/firebase/users'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { printSeals } from '@/lib/seal-generator'
@@ -35,7 +34,6 @@ export function CampaignsPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { organization } = useOrganization()
-  const { isCollapsed } = useSidebar()
   
   // Estado para campanha sendo editada (ao adicionar mais clientes)
   const [editingCampaign, setEditingCampaign] = useState<CampaignWithCompanies | null>(null)
@@ -530,7 +528,7 @@ export function CampaignsPage() {
       <Sidebar />
       <main className={cn(
         "transition-all duration-300",
-        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+"lg:pl-64"
       )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-32">
           <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
@@ -697,7 +695,7 @@ export function CampaignsPage() {
         {(mode === 'add' || mode === 'edit') && (
           <div className={cn(
             "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-4 shadow-lg duration-300 transition-all",
-            isCollapsed ? "lg:left-20" : "lg:left-64"
+"lg:left-64"
           )}>
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
               <div className="flex-1">

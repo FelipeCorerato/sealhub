@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import { Save, Loader2 } from 'lucide-react'
 import type { Company } from '@/types'
 import { formatCNPJ } from '@/lib/cnpj'
-import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 
 interface FooterBarProps {
@@ -20,8 +19,6 @@ export function FooterBar({
   isLoading = false,
   onSave 
 }: FooterBarProps) {
-  const { isCollapsed } = useSidebar()
-  
   if (!company) {
     return null
   }
@@ -32,7 +29,7 @@ export function FooterBar({
     <div 
       className={cn(
         "fixed bottom-0 left-0 right-0 animate-in slide-in-from-bottom-5 border-t border-neutral-200 bg-white p-3 shadow-lg duration-300 transition-all sm:p-4",
-        isCollapsed ? "lg:left-20" : "lg:left-64"
+"lg:left-64"
       )} 
       style={{ zIndex: 'var(--z-footer)' }}
     >

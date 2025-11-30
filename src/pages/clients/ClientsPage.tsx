@@ -26,7 +26,6 @@ import {
 import { isHeadquarters } from '@/lib/cnpj'
 import { useAuth } from '@/contexts/AuthContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useSidebar } from '@/contexts/SidebarContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -34,7 +33,6 @@ export function ClientsPage() {
   const location = useLocation()
   const { user } = useAuth()
   const { organization } = useOrganization()
-  const { isCollapsed } = useSidebar()
   
   // Determina o modo baseado na rota
   const mode = location.pathname === '/clientes/buscar' ? 'search' : 'add'
@@ -483,7 +481,7 @@ export function ClientsPage() {
       <Sidebar />
       <main className={cn(
         "transition-all duration-300",
-        isCollapsed ? "lg:pl-20" : "lg:pl-64"
+"lg:pl-64"
       )}>
         <div className="mx-auto max-w-7xl space-y-6 p-6 pb-6">
           <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm sm:p-4">
