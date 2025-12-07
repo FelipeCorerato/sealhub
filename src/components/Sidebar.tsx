@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Megaphone, Menu, LogOut, Settings2, User as UserIcon, Search, UserPlus } from 'lucide-react'
+import { Megaphone, Menu, LogOut, Settings2, User as UserIcon, Search, UserPlus, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -10,7 +10,7 @@ import { useAccessibility } from '@/contexts/AccessibilityContext'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 // Navigation items moved to sections below
-const navigation: Array<{ name: string; href: string; icon: any }> = []
+const navigation: Array<{ name: string; href: string; icon: LucideIcon }> = []
 
 const clientSubItems = [
   { name: 'Adicionar Cliente', href: '/clientes/adicionar', icon: UserPlus },

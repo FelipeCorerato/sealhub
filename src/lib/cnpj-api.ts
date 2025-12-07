@@ -221,7 +221,7 @@ export async function fetchRelatedCNPJs(
     const matrizData = await fetchCNPJFromReceita(matrizCNPJ)
     results.push(matrizData)
     console.log(`✅ Matriz encontrada: ${matrizData.name}`)
-  } catch (error) {
+  } catch {
     console.warn('❌ Matriz não encontrada:', matrizCNPJ)
     
     // Se não encontrou a matriz e o CNPJ pesquisado não é matriz,
@@ -231,7 +231,7 @@ export async function fetchRelatedCNPJs(
         const filialData = await fetchCNPJFromReceita(cleanCNPJ)
         results.push(filialData)
         console.log(`✅ Filial pesquisada encontrada: ${filialData.name}`)
-      } catch (err) {
+      } catch {
         console.error('❌ CNPJ pesquisado também não encontrado')
       }
     }
@@ -251,7 +251,7 @@ export async function fetchRelatedCNPJs(
       results.push(filialData)
       consecutiveNotFound = 0 // Resetar contador
       console.log(`✅ Filial ${branchNum} encontrada: ${filialData.name}`)
-    } catch (error) {
+    } catch {
       consecutiveNotFound++
       console.log(`❌ Filial ${branchNum} não encontrada (${consecutiveNotFound}/${maxConsecutiveNotFound})`)
       

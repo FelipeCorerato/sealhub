@@ -78,7 +78,7 @@ describe('contexts/OrganizationContext', () => {
     mockNavigate.mockClear()
     
     // Mock padrão do onAuthStateChanged - usuário logado
-    mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+    mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(mockUser)
       return vi.fn()
     })
@@ -285,7 +285,7 @@ describe('contexts/OrganizationContext', () => {
 
   describe('Estado sem autenticação', () => {
     it('deve não carregar organização se usuário não estiver autenticado', async () => {
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((_, callback) => {
         callback(null) // Sem usuário
         return vi.fn()
       })

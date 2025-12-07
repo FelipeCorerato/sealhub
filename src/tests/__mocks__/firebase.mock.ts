@@ -1,5 +1,6 @@
 import { vi } from 'vitest'
 import type { User as FirebaseUser } from 'firebase/auth'
+import type { DocumentSnapshot, QuerySnapshot, DocumentData, SnapshotMetadata } from 'firebase/firestore'
 
 // Mock do Firebase Auth
 export const mockFirebaseUser: Partial<FirebaseUser> = {
@@ -44,28 +45,62 @@ export const mockFirestore = {
   },
 }
 
-// Mock de documentos do Firestore
-export const createMockDocSnapshot = (data: any, exists = true) => ({
-  exists: () => exists,
-  data: () => data,
-  id: data?.id || 'mock-id',
-})
+// Mock metadata para DocumentSnapshot
+const mockMetadata: SnapshotMetadata = {
+  hasPendingWrites: false,
+  fromCache: false,
+  isEqual: vi.fn(() => true),
+}
 
-export const createMockQuerySnapshot = (docs: any[]) => ({
+// Mock de documentos do Firestore com tipos corretos
+export const createMockDocSnapshot = <T = DocumentData>(
+  data: T | null, 
+  exists = true
+): DocumentSnapshot<T, DocumentData> => ({
+  exists: () => exists,
+  data: () => (exists ? data as any : undefined),
+  id: (data as any)?.id || 'mock-id',
+  metadata: mockMetadata,
+  get: vi.fn((fieldPath: string) => {
+    if (!exists || !data) return undefined
+    return (data as any)[fieldPath]
+  }) as any,
+  toJSON: vi.fn(() => data) as any,
+  ref: {} as any,
+} as DocumentSnapshot<T, DocumentData>)
+
+export const createMockQuerySnapshot = <T = DocumentData>(
+  docs: T[]
+): QuerySnapshot<T, DocumentData> => ({
   empty: docs.length === 0,
+  size: docs.length,
   docs: docs.map((doc) => ({
-    id: doc.id,
+    id: (doc as any).id,
     data: () => doc,
-  })),
+    exists: () => true,
+    metadata: mockMetadata,
+    get: vi.fn() as any,
+    toJSON: vi.fn(() => doc) as any,
+    ref: {} as any,
+  } as any)),
   forEach: (callback: (doc: any) => void) => {
     docs.forEach((doc) =>
       callback({
-        id: doc.id,
+        id: (doc as any).id,
         data: () => doc,
+        exists: () => true,
+        metadata: mockMetadata,
+        get: vi.fn(),
+        toJSON: vi.fn(() => doc),
+        ref: {} as any,
       })
     )
   },
-})
+  metadata: mockMetadata,
+  query: {} as any,
+  docChanges: vi.fn(() => []) as any,
+  toJSON: vi.fn(() => docs) as any,
+} as QuerySnapshot<T, DocumentData>)
 
 // Mock de Organization
 export const mockOrganization = {

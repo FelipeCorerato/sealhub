@@ -76,7 +76,7 @@ describe('contexts/AuthContext', () => {
     mockNavigate.mockClear()
     
     // Mock padrão do onAuthStateChanged
-    mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+    mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
       // Simula usuário não logado inicialmente
       callback(null)
       return vi.fn() // cleanup function
@@ -304,7 +304,7 @@ describe('contexts/AuthContext', () => {
       }
 
       let authCallback: any
-      mockOnAuthStateChanged.mockImplementation((auth, callback) => {
+      mockOnAuthStateChanged.mockImplementation((_, callback) => {
         authCallback = callback
         callback(null) // Inicialmente não logado
         return vi.fn()

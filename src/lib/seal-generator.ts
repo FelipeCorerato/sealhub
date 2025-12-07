@@ -683,7 +683,7 @@ function generateSeal(
   
   // ===== INSTRUÇÕES DE MANUSEIO =====
   const activeInstructions = Object.entries(sealData.instructions)
-    .filter(([_, value]) => value)
+    .filter(([, value]) => value)
   
   if (activeInstructions.length > 0) {
     doc.setFillColor(255, 245, 230)
@@ -700,7 +700,7 @@ function generateSeal(
     
     let iconX = margin + 10
     activeInstructions.forEach(([key]) => {
-      drawInstructionIcon(doc, iconX, currentY - 5, key as any)
+      drawInstructionIcon(doc, iconX, currentY - 5, key as keyof CampaignInstructions)
       
       doc.setFontSize(8)
       doc.setTextColor(0, 0, 0)

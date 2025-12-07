@@ -5,7 +5,7 @@ import {
   downloadSeals,
   type SealData,
 } from '@/lib/seal-generator'
-import { mockCompany, mockCampaign } from '@/tests/__mocks__/firebase.mock'
+import { mockCompany } from '@/tests/__mocks__/firebase.mock'
 import type { Company } from '@/types'
 
 // Mock do jsPDF
@@ -27,7 +27,7 @@ vi.mock('jspdf', () => {
     getTextWidth = vi.fn(() => 50)
     save = vi.fn()
     
-    constructor(options?: any) {}
+    constructor(_options?: any) {}
   }
   
   return {

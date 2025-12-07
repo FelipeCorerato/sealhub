@@ -4,16 +4,12 @@ import {
   getCompanyById,
   getCompanyByCNPJ,
   searchCompaniesByName,
-  searchCompaniesByCNPJ,
-  getAllCompanies,
   updateCompany,
   deleteCompany,
   cnpjExists,
-  upsertCompanyFromReceita,
-  saveMatrizAndBranches,
   searchRelatedCompanies,
 } from '@/lib/firebase/companies'
-import type { CreateCompanyData, CompanyData } from '@/types'
+import type { CreateCompanyData } from '@/types'
 import {
   mockCompany,
   createMockDocSnapshot,
@@ -75,7 +71,7 @@ describe('firebase/companies', () => {
 
   describe('createCompany', () => {
     it('deve criar uma nova empresa com sucesso', async () => {
-      const { addDoc, getDoc, collection, Timestamp } = await import('firebase/firestore')
+      const { addDoc, getDoc, collection } = await import('firebase/firestore')
       
       const newCompanyData: CreateCompanyData = {
         organizationId: 'test-org-id',
@@ -278,7 +274,7 @@ describe('firebase/companies', () => {
 
   describe('updateCompany', () => {
     it('deve atualizar empresa com sucesso', async () => {
-      const { doc, updateDoc, getDoc, Timestamp } = await import('firebase/firestore')
+      const { doc, updateDoc, getDoc } = await import('firebase/firestore')
       
       const updates = { name: 'Updated Name', phone: '(11) 9999-9999' }
       const updatedCompany = {
