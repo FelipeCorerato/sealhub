@@ -96,10 +96,11 @@ export function OrganizationSettingsPage() {
       toast.success('Permissão atualizada!', {
         description: `Usuário agora é ${newRole === 'admin' ? 'administrador' : 'membro'}.`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível atualizar a permissão.'
       console.error('Erro ao atualizar permissão:', error)
       toast.error('Erro ao atualizar', {
-        description: error.message || 'Não foi possível atualizar a permissão.',
+        description: errorMessage,
       })
     } finally {
       setUpdatingUserId(null)
@@ -122,10 +123,11 @@ export function OrganizationSettingsPage() {
       toast.success('Usuário associado!', {
         description: 'O usuário agora pode acessar os dados da organização.',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível associar o usuário.'
       console.error('Erro ao associar usuário:', error)
       toast.error('Erro ao associar', {
-        description: error.message || 'Não foi possível associar o usuário.',
+        description: errorMessage,
       })
     } finally {
       setUpdatingUserId(null)
@@ -148,10 +150,11 @@ export function OrganizationSettingsPage() {
       toast.success('Usuário desassociado!', {
         description: 'O usuário não pode mais acessar os dados da organização.',
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível desassociar o usuário.'
       console.error('Erro ao desassociar usuário:', error)
       toast.error('Erro ao desassociar', {
-        description: error.message || 'Não foi possível desassociar o usuário.',
+        description: errorMessage,
       })
     } finally {
       setUpdatingUserId(null)

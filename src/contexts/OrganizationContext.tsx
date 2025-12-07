@@ -21,6 +21,7 @@ const OrganizationContext = createContext<OrganizationContextType | undefined>(
   undefined
 )
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useOrganization() {
   const context = useContext(OrganizationContext)
   if (!context) {
@@ -72,6 +73,7 @@ export function OrganizationProvider({ children }: OrganizationProviderProps) {
       setOrganization(null)
       setIsLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isAuthenticated])
 
   const refreshOrganization = async () => {

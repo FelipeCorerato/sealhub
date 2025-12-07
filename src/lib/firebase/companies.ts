@@ -65,10 +65,10 @@ function prepareCompanyData(
   companyData: CompanyData | Company,
   userId: string,
   headquartersId?: string
-): any {
+): Record<string, unknown> {
   const cnpjBase = getCNPJBase(companyData.cnpj)
   
-  const baseData: any = {
+  const baseData: Record<string, unknown> = {
     cnpj: companyData.cnpj,
     name: companyData.name,
     address: companyData.address,
@@ -328,7 +328,7 @@ export async function upsertCompanyFromReceita(
 
   if (existing) {
     // Atualiza com os novos dados da Receita
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...receitaData,
       lastSyncedAt: new Date(),
     }

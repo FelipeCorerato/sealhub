@@ -31,3 +31,5 @@ firebase-debug.*.log
 *.njsproj
 *.sln
 *.sw?
+
+coverage/

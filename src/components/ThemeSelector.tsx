@@ -24,12 +24,40 @@ export function ThemeSelector() {
     return saved === 'true'
   })
 
-  // Aplicar tema da empresa quando o componente monta, se necessário
-  useEffect(() => {
-    if (isCompanyTheme && organization) {
-      applyCompanyTheme(organization.theme.primaryColor || '#D97B35')
-    }
-  }, [organization]) // Reaplica quando a organização carrega
+  // Funções auxiliares para cores
+  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    } : null
+  }
+
+  const rgbToHex = (r: number, g: number, b: number): string => {
+    return '#' + [r, g, b].map((x) => {
+      const hex = Math.round(x).toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }).join('')
+  }
+
+  const darkenColor = (hex: string, percent: number): string => {
+    const rgb = hexToRgb(hex)
+    if (!rgb) return hex
+    const factor = (100 - percent) / 100
+    return rgbToHex(rgb.r * factor, rgb.g * factor, rgb.b * factor)
+  }
+
+  const lightenColor = (hex: string, percent: number): string => {
+    const rgb = hexToRgb(hex)
+    if (!rgb) return hex
+    const factor = percent / 100
+    return rgbToHex(
+      rgb.r + (255 - rgb.r) * factor,
+      rgb.g + (255 - rgb.g) * factor,
+      rgb.b + (255 - rgb.b) * factor
+    )
+  }
 
   // Função auxiliar para aplicar o tema da empresa
   const applyCompanyTheme = (primaryColor: string) => {
@@ -49,6 +77,14 @@ export function ThemeSelector() {
     root.style.setProperty('--color-background', organization?.theme.lightBackgroundColor || '#FAF6EF')
     root.style.setProperty('--color-text', '#2b2118')
   }
+
+  // Aplicar tema da empresa quando o componente monta, se necessário
+  useEffect(() => {
+    if (isCompanyTheme && organization) {
+      applyCompanyTheme(organization.theme.primaryColor || '#D97B35')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organization, isCompanyTheme]) // Reaplica quando a organização carrega
 
   const handleThemeSelect = (themeName: ThemeName) => {
     setIsCompanyTheme(false)
@@ -82,41 +118,6 @@ export function ThemeSelector() {
     setTimeout(() => {
       setOpen(false)
     }, 300)
-  }
-
-  // Funções auxiliares para cores
-  function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16),
-    } : null
-  }
-
-  function rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map((x) => {
-      const hex = Math.round(x).toString(16)
-      return hex.length === 1 ? '0' + hex : hex
-    }).join('')
-  }
-
-  function darkenColor(hex: string, percent: number): string {
-    const rgb = hexToRgb(hex)
-    if (!rgb) return hex
-    const factor = (100 - percent) / 100
-    return rgbToHex(rgb.r * factor, rgb.g * factor, rgb.b * factor)
-  }
-
-  function lightenColor(hex: string, percent: number): string {
-    const rgb = hexToRgb(hex)
-    if (!rgb) return hex
-    const factor = percent / 100
-    return rgbToHex(
-      rgb.r + (255 - rgb.r) * factor,
-      rgb.g + (255 - rgb.g) * factor,
-      rgb.b + (255 - rgb.b) * factor
-    )
   }
 
   return (
