@@ -1,35 +1,51 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase
 
-# Executa o workflow em push na branch main
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permite execução manual
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
     
     steps:
-      # 1. Checkout do código
-      - name: Checkout código
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
-      # 3. Instalar dependências
-      - name: Instalar dependências
+      - name: Install dependencies
         run: npm ci
 
-      # 4. Build da aplicação
-      - name: Build da aplicação
+      - name: Run tests
+        run: npm run test:run
+
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
         run: npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -40,12 +56,20 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
 
-      # 5. Deploy no Firebase Hosting
-      - name: Deploy no Firebase
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
-          projectId: sealhub-72985
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
 
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Successfully deployed to Firebase Hosting!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** ${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** main" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
